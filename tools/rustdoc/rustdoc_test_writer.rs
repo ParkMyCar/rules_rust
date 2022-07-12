@@ -112,15 +112,18 @@ fn expand_params_file(mut options: Options) -> Options {
         }
         None => return options,
     };
+    let params_filename = params_path.file_name().expect("must have a filename").to_str().expect("valid UTF-8");
+    let formatted_filename = format!("@{}", params_filename);
+    options.action_argv.push(formatted_filename);
 
     // read the params file
-    let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
-    let lines = BufReader::new(params_file)
-        .lines()
-        .map(|line| line.expect("failed to parse param as String"));
+    // let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
+    // let lines = BufReader::new(params_file)
+    //     .lines()
+    //     .map(|line| line.expect("failed to parse param as String"));
 
     // add all arguments
-    options.action_argv.extend(lines);
+    // options.action_argv.extend(lines);
 
     options
 }
@@ -232,7 +235,7 @@ fn write_test_runner(
 
 fn main() {
     let opt = parse_args();
-    // let opt = expand_params_file(opt);
+    let opt = expand_params_file(opt);
 
     let env: BTreeMap<String, String> = env::vars()
         .into_iter()
