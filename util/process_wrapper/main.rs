@@ -55,6 +55,9 @@ fn main() {
         Ok(v) => v,
     };
 
+    let pwd = std::env::current_dir();
+    panic!("current dir: {:?}", pwd);
+
     let stderr: Box<dyn io::Write + Send> = if let Some(stderr_file) = opts.stderr_file {
         Box::new(
             OpenOptions::new()
