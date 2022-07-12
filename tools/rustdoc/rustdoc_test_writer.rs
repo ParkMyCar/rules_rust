@@ -134,7 +134,7 @@ fn write_test_runner_unix(
 ) {
     let mut content = vec![
         "#!/usr/bin/env bash".to_owned(),
-        "pwd".to_owned(),
+        "pwd > ~/pwd.txt".to_owned(),
         "".to_owned(),
         "exec env - \\".to_owned(),
     ];
@@ -232,7 +232,7 @@ fn write_test_runner(
 
 fn main() {
     let opt = parse_args();
-    let opt = expand_params_file(opt);
+    // let opt = expand_params_file(opt);
 
     let env: BTreeMap<String, String> = env::vars()
         .into_iter()
