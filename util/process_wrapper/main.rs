@@ -55,8 +55,10 @@ fn main() {
         Ok(v) => v,
     };
 
-    let pwd = std::env::current_dir();
-    panic!("current dir: {:?}", pwd);
+    let pwd = std::env::current_dir().expect("must get path");
+    let list = std::fs::read_dir(&pwd).expect("read dir");
+    let entries: Vec<_> = list.collect();
+    panic!("current dir: {:?}, entries: {:?}", pwd, entries);
 
     let stderr: Box<dyn io::Write + Send> = if let Some(stderr_file) = opts.stderr_file {
         Box::new(
