@@ -6,6 +6,7 @@ use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fs;
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
@@ -89,6 +90,41 @@ fn parse_args() -> Options {
     }
 }
 
+/// Expand the Bazel Arg file and write it into our test runner
+fn expand_params_file(mut options: Options) -> Options {
+    let params_extension = if cfg!(target_family = "windows") {
+        ".rustdoc_test.bat-0.params"
+    } else {
+        ".rustdoc_test.sh-0.params"
+    };
+
+    // extract the path for the params file, if it exists
+    let params_path = match options.action_argv.pop() {
+        Some(arg) if arg.starts_with('@') && arg.ends_with(params_extension) => {
+            let path_str = arg
+                .strip_prefix('@')
+                .expect("Checked that there is an @ prefix");
+            PathBuf::from(path_str)
+        }
+        Some(arg) => {
+            options.action_argv.push(arg);
+            return options;
+        }
+        None => return options,
+    };
+
+    // read the params file
+    let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
+    let lines = BufReader::new(params_file)
+        .lines()
+        .map(|line| line.expect("failed to parse param as String"));
+
+    // add all arguments
+    options.action_argv.extend(lines);
+
+    options
+}
+
 /// Write a unix compatible test runner
 fn write_test_runner_unix(
     path: &Path,
@@ -98,6 +134,7 @@ fn write_test_runner_unix(
 ) {
     let mut content = vec![
         "#!/usr/bin/env bash".to_owned(),
+        "pwd".to_owned(),
         "".to_owned(),
         "exec env - \\".to_owned(),
     ];
@@ -195,6 +232,7 @@ fn write_test_runner(
 
 fn main() {
     let opt = parse_args();
+    let opt = expand_params_file(opt);
 
     let env: BTreeMap<String, String> = env::vars()
         .into_iter()
