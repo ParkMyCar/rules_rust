@@ -137,6 +137,7 @@ fn write_test_runner_unix(
 ) {
     let mut content = vec![
         "#!/usr/bin/env bash".to_owned(),
+        "ls".to_owned(),
         "pwd".to_owned(),
         "".to_owned(),
         "exec env - \\".to_owned(),
