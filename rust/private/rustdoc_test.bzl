@@ -153,7 +153,7 @@ def _rust_doc_test_impl(ctx):
 
     # We want to spill the Args to a params file, because for very large crates we can hit Window's
     # limit on the number of command line args that are supported (~32k)
-    writer_args.use_param_file("--writer_params=%s", use_always=True)
+    # writer_args.use_param_file("--writer_params=%s", use_always=True)
 
     # Allow writer environment variables to override those from the action.
     action.env.update(env)
