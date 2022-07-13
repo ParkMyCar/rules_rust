@@ -165,9 +165,11 @@ def _rust_doc_test_impl(ctx):
         outputs = [test_runner, opt_test_params],
     )
 
+    files = tools + [opt_test_params]
+
     return [DefaultInfo(
         files = depset([test_runner]),
-        runfiles = ctx.runfiles(files = [tools, opt_test_params], transitive_files = action.inputs),
+        runfiles = ctx.runfiles(files = files, transitive_files = action.inputs),
         executable = test_runner,
     )]
 
