@@ -112,9 +112,15 @@ fn expand_params_file(mut options: Options) -> Options {
         }
         None => return options,
     };
-    let params_filename = params_path.file_name().expect("must have a filename").to_str().expect("valid UTF-8");
-    let formatted_filename = format!("@{}", params_filename);
-    options.action_argv.push(formatted_filename);
+    // canonicalize the path
+    let absolute_path = std::fs::canonicalize(params_path).expect("failed to canonicalize path");
+
+    // append the '@' symbol
+    let formatted_path = format!("@{}", absolute_path.to_str().expect("inavlid UTF-8"));
+
+    // push the absolute path on
+    options.action_argv.push(formatted_path);
+
 
     // read the params file
     // let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
