@@ -145,6 +145,7 @@ fn write_test_runner_unix(
         "#!/usr/bin/env bash".to_owned(),
         "ls -lAhi".to_owned(),
         "pwd".to_owned(),
+        "echo ${pwd}".to_owned(),
         "".to_owned(),
         "exec env - \\".to_owned(),
     ];
