@@ -20,6 +20,9 @@ struct Options {
     /// The path where the script should be written.
     output: PathBuf,
 
+    /// The path where we can copy the params file Bazel might generate
+    optional_params_file: PathBuf,
+
     /// The `argv` of the configured rustdoc build action.
     action_argv: Vec<String>,
 }
@@ -27,7 +30,6 @@ struct Options {
 /// Parse command line arguments
 fn parse_args() -> Options {
     let args: Vec<String> = env::args().into_iter().collect();
-    println!("{:?}", args);
     let (writer_args, action_args) = {
         let split = args
             .iter()
@@ -51,6 +53,13 @@ fn parse_args() -> Options {
         .and_then(|arg| arg.splitn(2, '=').last())
         .map(PathBuf::from)
         .expect("Missing `--output` argument");
+
+    let optional_params_file = writer_args
+        .iter()
+        .find(|arg| arg.starts_with("--optional_test_params="))
+        .and_then(|arg| arg.splitn(2, '=').last())
+        .map(PathBuf::from)
+        .expect("Missing `--optional_test_params` argument");
 
     let (strip_substring_args, writer_args): (Vec<String>, Vec<String>) = writer_args
         .into_iter()
@@ -87,11 +96,12 @@ fn parse_args() -> Options {
         env_keys,
         strip_substrings,
         output,
+        optional_params_file,
         action_argv,
     }
 }
 
-/// Expand the Bazel Arg file and write it into our test runner
+/// Expand the Bazel Arg file and write it into our manually defined params file
 fn expand_params_file(mut options: Options) -> Options {
     let params_extension = if cfg!(target_family = "windows") {
         ".rustdoc_test.bat-0.params"
@@ -113,24 +123,23 @@ fn expand_params_file(mut options: Options) -> Options {
         }
         None => return options,
     };
-    // canonicalize the path
-    let absolute_path = std::fs::canonicalize(params_path).expect("failed to canonicalize path");
-
-    // append the '@' symbol
-    let formatted_path = format!("@{}", absolute_path.to_str().expect("inavlid UTF-8"));
-
-    // push the absolute path on
-    options.action_argv.push(formatted_path);
-
 
     // read the params file
-    // let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
-    // let lines = BufReader::new(params_file)
-    //     .lines()
-    //     .map(|line| line.expect("failed to parse param as String"));
+    let params_file = fs::File::open(params_path).expect("Failed to read the rustdoc params file");
+    let content: Vec<_> = BufReader::new(params_file)
+        .lines()
+        .map(|line| line.expect("failed to parse param as String"))
+        .collect();
+
+    println!("content: {:?}", content);
+    println!("file: {:?}", options.optional_params_file);
 
     // add all arguments
-    // options.action_argv.extend(lines);
+    fs::write(&options.optional_params_file, content.join("\n")).expect("Failed to write test runner");
+
+    // append the path of our new params file
+    let formatted_params_path = format!("@{}", options.optional_params_file.to_str().expect("invalid UTF-8"));
+    options.action_argv.push(formatted_params_path);
 
     options
 }
@@ -144,11 +153,7 @@ fn write_test_runner_unix(
 ) {
     let mut content = vec![
         "#!/usr/bin/env bash".to_owned(),
-        "ls -lAhi".to_owned(),
-        "ls -lAhi ..".to_owned(),
-        "ls -lAhi ../..".to_owned(),
         "pwd".to_owned(),
-        "echo ${pwd}".to_owned(),
         "".to_owned(),
         "exec env - \\".to_owned(),
     ];
