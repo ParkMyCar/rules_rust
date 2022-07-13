@@ -133,6 +133,7 @@ fn expand_params_file(mut options: Options) -> Options {
 
     println!("content: {:?}", content);
     println!("file: {:?}", options.optional_params_file);
+    println!("as str: {}", options.optional_params_file.to_str());
 
     // add all arguments
     fs::write(&options.optional_params_file, content.join("\n")).expect("Failed to write test runner");
