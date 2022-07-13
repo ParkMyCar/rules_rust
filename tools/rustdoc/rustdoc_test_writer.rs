@@ -164,11 +164,9 @@ fn write_test_runner_unix(
         // Remove any substrings found in the argument
         .map(|arg| {
             let mut stripped_arg = arg.to_owned();
-            if !stripped_arg.contains(params_path.to_str().expect("valid UTF-8")) {
-                strip_substrings
-                    .iter()
-                    .for_each(|substring| stripped_arg = stripped_arg.replace(substring, ""));
-            }
+            strip_substrings
+                .iter()
+                .for_each(|substring| stripped_arg = stripped_arg.replace(substring, ""));
             stripped_arg
         })
         .map(|arg| format!("'{}'", arg))
