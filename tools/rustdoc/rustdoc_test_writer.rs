@@ -133,7 +133,6 @@ fn expand_params_file(mut options: Options) -> Options {
 
     println!("content: {:?}", content);
     println!("file: {:?}", options.optional_params_file);
-    println!("as str: {:?}", options.optional_params_file.to_str());
 
     // add all arguments
     fs::write(&options.optional_params_file, content.join("\n")).expect("Failed to write test runner");
@@ -148,14 +147,13 @@ fn expand_params_file(mut options: Options) -> Options {
 /// Write a unix compatible test runner
 fn write_test_runner_unix(
     path: &Path,
+    params_path: &Path,
     env: &BTreeMap<String, String>,
     argv: &[String],
     strip_substrings: &[String],
 ) {
     let mut content = vec![
         "#!/usr/bin/env bash".to_owned(),
-        "pwd".to_owned(),
-        "".to_owned(),
         "exec env - \\".to_owned(),
     ];
 
@@ -166,9 +164,11 @@ fn write_test_runner_unix(
         // Remove any substrings found in the argument
         .map(|arg| {
             let mut stripped_arg = arg.to_owned();
-            strip_substrings
-                .iter()
-                .for_each(|substring| stripped_arg = stripped_arg.replace(substring, ""));
+            if stripped_arg != params_path.to_str().expect("valid UTF-8") {
+                strip_substrings
+                    .iter()
+                    .for_each(|substring| stripped_arg = stripped_arg.replace(substring, ""));
+            }
             stripped_arg
         })
         .map(|arg| format!("'{}'", arg))
@@ -237,12 +237,13 @@ fn set_executable(_path: &Path) {
 
 fn write_test_runner(
     path: &Path,
+    params_path: &Path,
     env: &BTreeMap<String, String>,
     argv: &[String],
     strip_substrings: &[String],
 ) {
     if cfg!(target_family = "unix") {
-        write_test_runner_unix(path, env, argv, strip_substrings);
+        write_test_runner_unix(path, params_path, env, argv, strip_substrings);
     } else if cfg!(target_family = "windows") {
         write_test_runner_windows(path, env, argv, strip_substrings);
     }
@@ -259,5 +260,5 @@ fn main() {
         .filter(|(key, _)| opt.env_keys.iter().any(|k| k == key))
         .collect();
 
-    write_test_runner(&opt.output, &env, &opt.action_argv, &opt.strip_substrings);
+    write_test_runner(&opt.output, &opt.optional_params_file, &env, &opt.action_argv, &opt.strip_substrings);
 }
