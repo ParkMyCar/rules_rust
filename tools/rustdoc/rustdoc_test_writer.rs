@@ -166,11 +166,7 @@ fn write_test_runner_unix(
     argv: &[String],
     strip_substrings: &[String],
 ) {
-    let mut content = vec![
-        "#!/usr/bin/env bash".to_owned(),
-        "".to_owned(),
-        "exec env - \\".to_owned(),
-    ];
+    let mut content = vec!["#!/usr/bin/env bash".to_owned(), "exec env - \\".to_owned()];
 
     content.extend(env.iter().map(|(key, val)| format!("{}='{}' \\", key, val)));
 
