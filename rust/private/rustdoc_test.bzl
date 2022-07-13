@@ -143,8 +143,6 @@ def _rust_doc_test_impl(ctx):
     # Allow writer environment variables to override those from the action.
     action.env.update(env)
 
-    action.arguments.use_param_file("@%s", use_always = False)
-
     ctx.actions.run(
         mnemonic = "RustdocTestWriter",
         progress_message = "Generating Rustdoc test runner for {}".format(ctx.attr.crate.label),
