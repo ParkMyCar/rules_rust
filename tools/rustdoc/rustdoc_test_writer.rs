@@ -129,6 +129,14 @@ fn expand_params_file(mut options: Options) -> Options {
     let content: Vec<_> = BufReader::new(params_file)
         .lines()
         .map(|line| line.expect("failed to parse param as String"))
+        // Remove any substrings found in the argument
+        .map(|arg| {
+            let mut stripped_arg = arg;
+            options.strip_substrings
+                .iter()
+                .for_each(|substring| stripped_arg = stripped_arg.replace(substring, ""));
+            stripped_arg
+        })
         .collect();
 
     println!("content: {:?}", content);
@@ -147,7 +155,6 @@ fn expand_params_file(mut options: Options) -> Options {
 /// Write a unix compatible test runner
 fn write_test_runner_unix(
     path: &Path,
-    params_path: &Path,
     env: &BTreeMap<String, String>,
     argv: &[String],
     strip_substrings: &[String],
@@ -235,13 +242,12 @@ fn set_executable(_path: &Path) {
 
 fn write_test_runner(
     path: &Path,
-    params_path: &Path,
     env: &BTreeMap<String, String>,
     argv: &[String],
     strip_substrings: &[String],
 ) {
     if cfg!(target_family = "unix") {
-        write_test_runner_unix(path, params_path, env, argv, strip_substrings);
+        write_test_runner_unix(path, env, argv, strip_substrings);
     } else if cfg!(target_family = "windows") {
         write_test_runner_windows(path, env, argv, strip_substrings);
     }
@@ -258,5 +264,5 @@ fn main() {
         .filter(|(key, _)| opt.env_keys.iter().any(|k| k == key))
         .collect();
 
-    write_test_runner(&opt.output, &opt.optional_params_file, &env, &opt.action_argv, &opt.strip_substrings);
+    write_test_runner(&opt.output, &env, &opt.action_argv, &opt.strip_substrings);
 }
