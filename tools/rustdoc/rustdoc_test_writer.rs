@@ -30,6 +30,9 @@ struct Options {
 /// Parse command line arguments
 fn parse_args() -> Options {
     let args: Vec<String> = env::args().into_iter().collect();
+
+    println!("args {:?}", args);
+
     let (writer_args, action_args) = {
         let split = args
             .iter()
