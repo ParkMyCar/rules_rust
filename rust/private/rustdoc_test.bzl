@@ -150,7 +150,7 @@ def _rust_doc_test_impl(ctx):
         inputs = action.inputs,
         tools = tools,
         # arguments = [writer_args] + action.arguments,
-        arguments = writer_args,
+        arguments = [writer_args],
         env = action.env,
         outputs = [test_runner],
     )
