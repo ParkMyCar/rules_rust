@@ -60,6 +60,9 @@ def _construct_writer_arguments(ctx, test_runner, opt_test_params, action, crate
     # files. To ensure rustdoc can find the appropriate dependencies, the
     # file roots are identified and tracked for each dependency so it can be
     # stripped from the test runner.
+
+    # Collect and dedupe all of the file roots in a list before appending
+    # them to args to prevent generating a large amount of identical args
     roots = []
     for dep in crate_info.deps.to_list():
         dep_crate_info = getattr(dep, "crate_info", None)
