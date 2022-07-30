@@ -155,6 +155,8 @@ def determine_output_hash(crate_root, label):
     """
 
     # Take the absolute value of hash() since it could be negative.
+    print(crate_root.path)
+    print(repr(label))
     h = abs(hash(crate_root.path) + hash(repr(label)))
     return repr(h)
 
