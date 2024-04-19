@@ -220,6 +220,7 @@ def _rust_bindgen_impl(ctx):
         getattr(attr, "clang_flags", []),
         getattr(ctx.attr, "data", []),
     )
+    print(clang_flags)
 
     compile_variables = cc_common.create_compile_variables(
         cc_toolchain = cc_toolchain,
