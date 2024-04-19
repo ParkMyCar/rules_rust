@@ -185,7 +185,10 @@ def _rust_bindgen_impl(ctx):
 
     cc_toolchain, feature_configuration = find_cc_toolchain(ctx = ctx)
 
-    tools = depset([clang_bin], transitive = [cc_toolchain.all_files])
+    tools = depset(
+        direct = [clang_bin] + ctx.files.data,
+        transitive = [cc_toolchain.all_files],
+    )
 
     # libclang should only have 1 output file
     libclang_dir = _get_libs_for_static_executable(libclang).to_list()[0].dirname
@@ -217,9 +220,12 @@ def _rust_bindgen_impl(ctx):
 
     clang_flags = expand_list_element_locations(
         ctx,
-        getattr(attr, "clang_flags", []),
+        getattr(ctx.attr, "clang_flags", []),
         getattr(ctx.attr, "data", []),
     )
+    print("HERE 2")
+    getattr(attr, "clang_flags", [])
+    print("HERE")
     print(clang_flags)
 
     compile_variables = cc_common.create_compile_variables(
