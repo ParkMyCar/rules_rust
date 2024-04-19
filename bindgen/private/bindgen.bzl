@@ -26,7 +26,7 @@ load("//rust:rust_common.bzl", "BuildInfo")
 load("//rust/private:rustc.bzl", "get_linker_and_args")
 
 # buildifier: disable=bzl-visibility
-load("//rust/private:utils.bzl", "find_cc_toolchain", "get_lib_name_default", "get_preferred_artifact")
+load("//rust/private:utils.bzl", "expand_list_element_locations", "find_cc_toolchain", "get_lib_name_default", "get_preferred_artifact")
 
 # TODO(hlopko): use the more robust logic from rustc.bzl also here, through a reasonable API.
 def _get_libs_for_static_executable(dep):
@@ -215,13 +215,19 @@ def _rust_bindgen_impl(ctx):
     # Configure Clang Arguments
     args.add("--")
 
+    clang_flags = expand_list_element_locations(
+        ctx,
+        getattr(attr, "clang_flags", []),
+        getattr(ctx.attr, "data", []),
+    )
+
     compile_variables = cc_common.create_compile_variables(
         cc_toolchain = cc_toolchain,
         feature_configuration = feature_configuration,
         include_directories = cc_lib[CcInfo].compilation_context.includes,
         quote_include_directories = cc_lib[CcInfo].compilation_context.quote_includes,
         system_include_directories = cc_lib[CcInfo].compilation_context.system_includes,
-        user_compile_flags = ctx.attr.clang_flags,
+        user_compile_flags = clang_flags,
     )
     compile_flags = cc_common.get_memory_inefficient_command_line(
         feature_configuration = feature_configuration,
@@ -324,6 +330,10 @@ rust_bindgen = rule(
             doc = "The `.h` file to generate bindings for.",
             allow_single_file = True,
             mandatory = True,
+        ),
+        "data": attr.label_list(
+            doc = "Data required by bindgen.",
+            allow_files = True,
         ),
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
