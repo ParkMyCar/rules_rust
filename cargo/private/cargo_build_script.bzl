@@ -288,6 +288,9 @@ def _cargo_build_script_impl(ctx):
             data_roots[path] = True
 
     # Always include the manifest dir.
+    print(ctx.label.workspace_name)
+    print(ctx.workspace_name)
+    print(ctx.label.package)
     data_manifest_dir = "{0}/{1}".format(ctx.label.workspace_name or ctx.workspace_name, ctx.label.package)
     data_roots[data_manifest_dir] = True
 
