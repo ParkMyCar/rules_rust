@@ -256,6 +256,10 @@ fn symlink_data_files(exec_root: &Path, working_directory: &PathBuf, data_files_
     // symlink into the `working_directory`.
     for path in paths.lines() {
         let full_path = exec_root.join(path);
+        if !full_path.exists() {
+            continue;
+        }
+
         let dir_entries = std::fs::read_dir(&full_path)
             .map_err(|err| format!("Failed while listing exec root: {err:?}"))?;
         

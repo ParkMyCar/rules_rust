@@ -281,13 +281,15 @@ def _cargo_build_script_impl(ctx):
     for entry in ctx.attr.data:
         files = entry[DefaultInfo].files
         for file in files.to_list():
-            print(file.root.path)
-            print(entry.label.workspace_root)
             path = "{0}/{1}".format(file.root.path, entry.label.workspace_root)
             path = path.removeprefix("/")
 
             # Use a dictionary with all of the same values to emulate a set.
             data_roots[path] = True
+
+    # Always include the manifest dir.
+    data_manifest_dir = "{0}/{1}".format(ctx.label.workspace_name or ctx.workspace_name, ctx.label.package)
+    data_roots[data_manifest_dir] = True
 
     ctx.actions.write(
         output = data_files,
