@@ -291,6 +291,8 @@ def _cargo_build_script_impl(ctx):
     data_manifest_dir = "{0}/{1}".format(ctx.label.workspace_name or ctx.workspace_name, ctx.label.package)
     data_roots[data_manifest_dir] = True
 
+    print(data_roots)
+
     ctx.actions.write(
         output = data_files,
         content = "\n".join([path for path in data_roots.keys()]),
