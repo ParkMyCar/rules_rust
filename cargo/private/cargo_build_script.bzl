@@ -143,6 +143,7 @@ def _cargo_build_script_impl(ctx):
     flags_out = ctx.actions.declare_file(ctx.label.name + ".flags")
     link_flags = ctx.actions.declare_file(ctx.label.name + ".linkflags")
     link_search_paths = ctx.actions.declare_file(ctx.label.name + ".linksearchpaths")  # rustc-link-search, propagated from transitive dependencies
+    data_files = ctx.actions.declare_file(ctx.label.name + ".datafiles")
     manifest_dir = "%s.runfiles/%s/%s" % (script.path, ctx.label.workspace_name or ctx.workspace_name, ctx.label.package)
     compilation_mode_opt_level = get_compilation_mode_opts(ctx, toolchain).opt_level
 
@@ -271,8 +272,24 @@ def _cargo_build_script_impl(ctx):
         direct = [
             script,
             ctx.executable._cargo_build_script_runner,
-        ] + ctx.files.data + ctx.files.tools + ([toolchain.target_json] if toolchain.target_json else []),
+        ] + ctx.files.tools + ([toolchain.target_json] if toolchain.target_json else []),
         transitive = toolchain_tools,
+    )
+
+    # Generate the set of paths that we need to provide to the build script.
+    data_roots = {}
+    for entry in ctx.attr.data:
+        files = entry[DefaultInfo].files
+        for file in files.to_list():
+            path = "{0}/{1}".format(file.root.path, entry.label.workspace_root)
+            path = path.removeprefix("/")
+
+            # Use a dictionary with all of the same values to emulate a set.
+            data_roots[path] = True
+
+    ctx.actions.write(
+        output = data_files,
+        content = "\n".join([path for path in data_roots.keys()]),
     )
 
     # dep_env_file contains additional environment variables coming from
@@ -288,6 +305,7 @@ def _cargo_build_script_impl(ctx):
     args.add(flags_out)
     args.add(link_flags)
     args.add(link_search_paths)
+    args.add(data_files)
     args.add(dep_env_out)
     args.add(streams.stdout)
     args.add(streams.stderr)
@@ -306,6 +324,8 @@ def _cargo_build_script_impl(ctx):
         for dep_build_info in dep[rust_common.dep_info].transitive_build_infos.to_list():
             build_script_inputs.append(dep_build_info.out_dir)
 
+    inputs = depset([data_files] + ctx.files.data + build_script_inputs)
+
     experimental_symlink_execroot = ctx.attr._experimental_symlink_execroot[BuildSettingInfo].value or \
                                     _feature_enabled(ctx, "symlink-exec-root")
 
@@ -317,7 +337,7 @@ def _cargo_build_script_impl(ctx):
         arguments = [args],
         outputs = [out_dir, env_out, flags_out, link_flags, link_search_paths, dep_env_out, streams.stdout, streams.stderr],
         tools = tools,
-        inputs = build_script_inputs,
+        inputs = inputs,
         mnemonic = "CargoBuildScriptRun",
         progress_message = "Running Cargo build script {}".format(pkg_name),
         env = env,

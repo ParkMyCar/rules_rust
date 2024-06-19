@@ -154,7 +154,7 @@ def cargo_build_script(
         crate_features = crate_features,
         deps = deps,
         proc_macro_deps = proc_macro_deps,
-        data = data,
+        # data = data,
         compile_data = compile_data,
         rustc_env = rustc_env,
         rustc_env_files = rustc_env_files,

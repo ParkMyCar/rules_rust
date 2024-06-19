@@ -42,6 +42,7 @@ fn run_buildrs() -> Result<(), String> {
         compile_flags_file,
         link_flags_file,
         link_search_paths_file,
+        data_files,
         output_dep_env_path,
         stdout_path,
         stderr_path,
@@ -79,6 +80,9 @@ fn run_buildrs() -> Result<(), String> {
         get_target_env_vars(&rustc_env).expect("Error getting target env vars from rustc");
 
     let working_directory = resolve_rundir(&rundir, &exec_root, &manifest_dir)?;
+
+    // Symlink all of the data files into the working directory so the executable can access them.
+    symlink_data_files(&exec_root, &working_directory, &data_files)?;
 
     let mut command = Command::new(exec_root.join(progname));
     command
@@ -243,6 +247,30 @@ fn resolve_rundir(rundir: &str, exec_root: &Path, manifest_dir: &Path) -> Result
     Ok(exec_root.join(rundir_path))
 }
 
+fn symlink_data_files(exec_root: &Path, working_directory: &PathBuf, data_files_manifest: &String) -> Result<(), String> {
+    let paths = read_to_string(data_files_manifest).map_err(|e| e.to_string())?;
+
+    // `data_files_manifest` contains a new line for each directory whose contents we need to
+    // symlink into the `working_directory`.
+    for path in paths.lines() {
+        let full_path = exec_root.join(path);
+        let dir_entries = std::fs::read_dir(&full_path)
+            .map_err(|err| format!("Failed while listing exec root: {err:?}"))?;
+        
+        for entry in dir_entries {
+            let data_path = entry
+                .map_err(|err| format!("Failed to list entry from {path} listing: {err:?}"))?
+                .path();
+            let filename = data_path.file_name().ok_or_else(|| "symlinking filesystem root?")?;
+            let dest_path = working_directory.join(filename);
+
+            symlink_if_not_exists(&data_path, &dest_path);
+        }
+    }
+
+    Ok(())
+}
+
 fn swallow_already_exists(err: std::io::Error) -> std::io::Result<()> {
     if err.kind() == std::io::ErrorKind::AlreadyExists {
         Ok(())
@@ -260,6 +288,7 @@ struct Options {
     compile_flags_file: String,
     link_flags_file: String,
     link_search_paths_file: String,
+    data_files: String,
     output_dep_env_path: String,
     stdout_path: String,
     stderr_path: String,
@@ -272,7 +301,7 @@ fn parse_args() -> Result<Options, String> {
     let mut args = env::args().skip(1);
 
     // TODO: we should consider an alternative to positional arguments.
-    match (args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next()) {
+    match (args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next(), args.next()) {
         (
             Some(progname),
             Some(crate_links),
@@ -281,6 +310,7 @@ fn parse_args() -> Result<Options, String> {
             Some(compile_flags_file),
             Some(link_flags_file),
             Some(link_search_paths_file),
+            Some(data_files),
             Some(output_dep_env_path),
             Some(stdout_path),
             Some(stderr_path),
@@ -294,6 +324,7 @@ fn parse_args() -> Result<Options, String> {
                 compile_flags_file,
                 link_flags_file,
                 link_search_paths_file,
+                data_files,
                 output_dep_env_path,
                 stdout_path,
                 stderr_path,
