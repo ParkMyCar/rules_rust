@@ -281,7 +281,8 @@ def _cargo_build_script_impl(ctx):
     for entry in ctx.attr.data:
         files = entry[DefaultInfo].files
         for file in files.to_list():
-            print(file.path)
+            print(file.root.path)
+            print(entry.label.workspace_root)
             path = "{0}/{1}".format(file.root.path, entry.label.workspace_root)
             path = path.removeprefix("/")
 
