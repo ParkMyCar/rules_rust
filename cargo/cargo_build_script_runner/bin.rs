@@ -264,7 +264,7 @@ fn symlink_data_files(exec_root: &Path, working_directory: &PathBuf, data_files_
             let filename = data_path.file_name().ok_or_else(|| "symlinking filesystem root?")?;
             let dest_path = working_directory.join(filename);
 
-            symlink_if_not_exists(&data_path, &dest_path);
+            symlink_if_not_exists(&data_path, &dest_path)?;
         }
     }
 
