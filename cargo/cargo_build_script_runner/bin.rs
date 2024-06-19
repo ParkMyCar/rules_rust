@@ -250,8 +250,6 @@ fn resolve_rundir(rundir: &str, exec_root: &Path, manifest_dir: &Path) -> Result
 fn symlink_data_files(exec_root: &Path, working_directory: &PathBuf, data_files_manifest: &String) -> Result<(), String> {
     let paths = read_to_string(data_files_manifest).map_err(|e| e.to_string())?;
 
-    println!("EXEC ROOT {exec_root:?}, {data_files_manifest:?}");
-
     // `data_files_manifest` contains a new line for each directory whose contents we need to
     // symlink into the `working_directory`.
     for path in paths.lines() {
