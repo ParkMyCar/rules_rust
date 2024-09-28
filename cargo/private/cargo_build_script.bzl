@@ -284,11 +284,8 @@ def _cargo_build_script_impl(ctx):
     toolchain_tools = [toolchain.all_files]
 
     cc_toolchain = find_cpp_toolchain(ctx)
-
-    # Start with the default shell env, which contains any --action_env
-    # settings passed in on the command line.
-    env = dict(ctx.configuration.default_shell_env)
-
+    
+    env = dict({})
     env.update({
         "CARGO_CRATE_NAME": name_to_crate_name(pkg_name),
         "CARGO_MANIFEST_DIR": manifest_dir,

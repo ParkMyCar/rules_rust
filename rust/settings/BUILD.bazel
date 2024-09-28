@@ -141,6 +141,15 @@ bool_flag(
     visibility = ["//visibility:public"],
 )
 
+# A flag to control whether `use_default_shell_env` is set for `Rustc` and `Cargo Build Script` actions.
+#
+# See https://bazel.build/versions/6.0.0/rules/lib/configuration#default_shell_env
+bool_flag(
+    name = "use_default_shell_env",
+    build_setting_default = True,
+    visibility = ["//visibility:public"],
+)
+
 # This setting is used by the clippy rules. See https://bazelbuild.github.io/rules_rust/rust_clippy.html
 label_flag(
     name = "clippy.toml",

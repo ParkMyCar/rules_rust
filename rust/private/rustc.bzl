@@ -1242,7 +1242,7 @@ def rustc_compile_action(
 
     args_metadata = None
     if build_metadata:
-        args_metadata, _ = construct_arguments(
+        args_metadata, env_metadata = construct_arguments(
             ctx = ctx,
             attr = attr,
             file = ctx.file,
@@ -1266,10 +1266,14 @@ def rustc_compile_action(
             build_metadata = True,
         )
 
-    env = dict(ctx.configuration.default_shell_env)
-
-    # this is the final list of env vars
-    env.update(env_from_args)
+        # When calculating a crate hash, `rustc` includes all of the environment variables that are
+        # currently set. If the environment variables differ between these two actions then we
+        # could fail to build with opaque errors like "found possibly newer version of crate".
+        if env_from_args != env_metadata:
+            fail("Rustc Metadata action must have same environment variables as Rustc Library action. \nMetadata: {}\nLibrary: {}".format(
+                env_metadata,
+                env_from_args,
+            ))
 
     if hasattr(attr, "version") and attr.version != "0.0.0":
         formatted_version = " v{}".format(attr.version)
@@ -1323,7 +1327,7 @@ def rustc_compile_action(
             executable = ctx.executable._process_wrapper,
             inputs = compile_inputs,
             outputs = action_outputs,
-            env = env,
+            env = env_from_args,
             arguments = args.all,
             mnemonic = "Rustc",
             progress_message = "Compiling Rust {} {}{} ({} files)".format(
@@ -1333,13 +1337,14 @@ def rustc_compile_action(
                 len(crate_info.srcs.to_list()),
             ),
             toolchain = "@rules_rust//rust:toolchain_type",
+            use_default_shell_env = toolchain._use_default_shell_env,
         )
         if args_metadata:
             ctx.actions.run(
                 executable = ctx.executable._process_wrapper,
                 inputs = compile_inputs,
                 outputs = [build_metadata] + [x for x in [rustc_rmeta_output] if x],
-                env = env,
+                env = env_from_args,
                 arguments = args_metadata.all,
                 mnemonic = "RustcMetadata",
                 progress_message = "Compiling Rust metadata {} {}{} ({} files)".format(
@@ -1349,6 +1354,7 @@ def rustc_compile_action(
                     len(crate_info.srcs.to_list()),
                 ),
                 toolchain = "@rules_rust//rust:toolchain_type",
+                use_default_shell_env = toolchain._use_default_shell_env,
             )
     elif hasattr(ctx.executable, "_bootstrap_process_wrapper"):
         # Run without process_wrapper
@@ -1358,7 +1364,7 @@ def rustc_compile_action(
             executable = ctx.executable._bootstrap_process_wrapper,
             inputs = compile_inputs,
             outputs = action_outputs,
-            env = env,
+            env = env_from_args,
             arguments = [args.rustc_path, args.rustc_flags],
             mnemonic = "Rustc",
             progress_message = "Compiling Rust (without process_wrapper) {} {}{} ({} files)".format(
@@ -1512,7 +1518,7 @@ def rustc_compile_action(
 
     if crate_info_dict != None:
         crate_info_dict.update({
-            "rustc_env": env,
+            "rustc_env": env_from_args,
         })
         crate_info = rust_common.create_crate_info(**crate_info_dict)
 
