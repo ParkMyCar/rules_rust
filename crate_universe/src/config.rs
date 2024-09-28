@@ -232,9 +232,13 @@ pub(crate) struct CrateAnnotations {
     /// [proc_macro_deps](https://bazelbuild.github.io/rules_rust/defs.html#rust_library-proc_macro_deps) attribute.
     pub(crate) proc_macro_deps: Option<Select<BTreeSet<Label>>>,
 
-    /// Additional data to pass to  the target's
+    /// Additional data to pass to the target's
     /// [crate_features](https://bazelbuild.github.io/rules_rust/defs.html#rust_library-crate_features) attribute.
     pub(crate) crate_features: Option<Select<BTreeSet<String>>>,
+
+    /// Additional data to remove from the target's
+    /// [crate_features](https://bazelbuild.github.io/rules_rust/defs.html#rust_library-crate_features) attribute.
+    pub(crate) crate_features_to_remove: Option<Select<BTreeSet<String>>>,
 
     /// Additional data to pass to  the target's
     /// [data](https://bazelbuild.github.io/rules_rust/defs.html#rust_library-data) attribute.
@@ -381,6 +385,7 @@ impl Add for CrateAnnotations {
             deps: select_merge(self.deps, rhs.deps),
             proc_macro_deps: select_merge(self.proc_macro_deps, rhs.proc_macro_deps),
             crate_features: select_merge(self.crate_features, rhs.crate_features),
+            crate_features_to_remove: select_merge(self.crate_features_to_remove, rhs.crate_features_to_remove),
             data: select_merge(self.data, rhs.data),
             data_glob: joined_extra_member!(self.data_glob, rhs.data_glob, BTreeSet::new, BTreeSet::extend),
             disable_pipelining: self.disable_pipelining || rhs.disable_pipelining,

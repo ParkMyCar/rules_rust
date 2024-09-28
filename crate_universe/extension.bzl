@@ -468,6 +468,9 @@ _annotation = tag_class(
         crate_features = attr.string_list(
             doc = "A list of strings to add to a crate's `rust_library::crate_features` attribute.",
         ),
+        crate_features_to_remove = attr.string_list(
+            doc = "A list of strings to remove from a crate's `rust_library::crate_features` attribute.",
+        ),
         data = _relative_label_list(
             doc = "A list of labels to add to a crate's `rust_library::data` attribute.",
         ),

@@ -100,6 +100,7 @@ def _annotation(
         compile_data = None,
         compile_data_glob = None,
         crate_features = None,
+        crate_features_to_remove = None,
         data = None,
         data_glob = None,
         deps = None,
@@ -144,6 +145,8 @@ def _annotation(
         compile_data_glob (list, optional): A list of glob patterns to add to a crate's `rust_library::compile_data`
             attribute.
         crate_features (optional): A list of strings to add to a crate's `rust_library::crate_features`
+            attribute.
+        crate_features_to_remove (optional): A list of strings to remove from a crate's `rust_library::crate_features`
             attribute.
         data (list, optional): A list of labels to add to a crate's `rust_library::data` attribute.
         data_glob (list, optional): A list of glob patterns to add to a crate's `rust_library::data` attribute.
@@ -200,6 +203,7 @@ def _annotation(
             compile_data = _stringify_list(compile_data),
             compile_data_glob = compile_data_glob,
             crate_features = crate_features,
+            crate_features_to_remove = crate_features_to_remove,
             data = _stringify_list(data),
             data_glob = data_glob,
             deps = _stringify_list(deps),

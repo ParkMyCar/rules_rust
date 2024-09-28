@@ -574,6 +574,12 @@ impl CrateContext {
                     Select::merge(self.common_attrs.crate_features, extra.clone());
             }
 
+            // Crate features to remove
+            if let Some(removal) = &crate_extra.crate_features_to_remove {
+                self.common_attrs.crate_features =
+                    Select::difference(self.common_attrs.crate_features, removal.clone());
+            }
+
             // Data
             if let Some(extra) = &crate_extra.data {
                 self.common_attrs.data = Select::merge(self.common_attrs.data, extra.clone());

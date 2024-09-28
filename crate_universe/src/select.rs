@@ -1,10 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
+use std::hash::Hash;
 
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 
 /// A wrapper around values where some values may be conditionally included (e.g. only on a certain platform), and others are unconditional.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct Select<T>
 where
     T: Selectable,
@@ -28,6 +29,9 @@ where
     fn values(this: &Select<Self>) -> Vec<Self::ItemType>;
 
     fn merge(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self>;
+
+    /// Returns a [`Select`] with all of the elements in `lhs` that are not also in `rhs`.
+    fn difference(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self>;
 }
 
 // Replace with `trait_alias` once stabilized.
@@ -109,6 +113,10 @@ where
 
     pub(crate) fn merge(lhs: Self, rhs: Self) -> Self {
         T::merge(lhs, rhs)
+    }
+
+    pub(crate) fn difference(lhs: Self, rhs: Self) -> Self {
+        T::difference(lhs, rhs)
     }
 }
 
@@ -222,6 +230,25 @@ where
 
         result
     }
+
+    fn difference(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self> {
+        let mut result: Select<Self> = Select::new();
+
+        if let Some(value) = lhs.common {
+            if Some(&value) != rhs.common.as_ref() {
+                result.insert(value, None);
+            }
+        }
+
+        for (configuration, value) in lhs.selects.into_iter() {
+            let maybe_rhs_value = rhs.selects.get(&configuration);
+            if Some(&value) != maybe_rhs_value {
+                result.insert(value, Some(configuration));
+            }
+        }
+
+        result
+    }
 }
 
 // Vec<T>
@@ -283,6 +310,30 @@ where
         }
         for (configuration, values) in rhs.selects.into_iter() {
             for value in values.into_iter() {
+                result.insert(value, Some(configuration.clone()));
+            }
+        }
+
+        result
+    }
+
+    fn difference(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self> {
+        let mut result: Select<Self> = Select::new();
+
+        for value in lhs.common.into_iter() {
+            let rhs_contains = rhs.common.iter().any(|r_val| *r_val == value);
+            if !rhs_contains {
+                result.insert(value, None);
+            }
+        }
+
+        for (configuration, values) in lhs.selects.into_iter() {
+            let maybe_rhs_values = rhs.selects.get(&configuration);
+            let filter: Box<dyn Fn(&T) -> bool> = match maybe_rhs_values {
+                None => Box::new(|_x| true),
+                Some(rhs_values) => Box::new(|val| rhs_values.iter().any(|r_val| r_val == val)),
+            };
+            for value in values.into_iter().filter(filter) {
                 result.insert(value, Some(configuration.clone()));
             }
         }
@@ -360,6 +411,29 @@ where
         }
         for (configuration, values) in rhs.selects.into_iter() {
             for value in values {
+                result.insert(value, Some(configuration.clone()));
+            }
+        }
+
+        result
+    }
+
+    fn difference(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self> {
+        let mut result: Select<Self> = Select::new();
+
+        for value in lhs.common.into_iter() {
+            if !rhs.common.contains(&value) {
+                result.insert(value, None);
+            }
+        }
+
+        for (configuration, values) in lhs.selects.into_iter() {
+            let maybe_rhs_values = rhs.selects.get(&configuration);
+            let filter: Box<dyn Fn(&T) -> bool> = match maybe_rhs_values {
+                None => Box::new(|_x| true),
+                Some(rhs_values) => Box::new(|val| rhs_values.contains(val)),
+            };
+            for value in values.into_iter().filter(filter) {
                 result.insert(value, Some(configuration.clone()));
             }
         }
@@ -476,6 +550,29 @@ where
         for (configuration, entries) in rhs.selects.into_iter() {
             for (key, value) in entries {
                 result.insert((key, value), Some(configuration.clone()));
+            }
+        }
+
+        result
+    }
+
+    fn difference(lhs: Select<Self>, rhs: Select<Self>) -> Select<Self> {
+        let mut result: Select<Self> = Select::new();
+
+        for (key, val) in lhs.common.into_iter() {
+            if !rhs.common.contains_key(&key) {
+                result.insert((key, val), None);
+            }
+        }
+
+        for (configuration, values) in lhs.selects.into_iter() {
+            let maybe_rhs_values = rhs.selects.get(&configuration);
+            let filter: Box<dyn Fn(&U) -> bool> = match maybe_rhs_values {
+                None => Box::new(|_x| true),
+                Some(rhs_values) => Box::new(|val| rhs_values.contains_key(val)),
+            };
+            for value in values.into_iter().filter(|(key, _val)| filter(key)) {
+                result.insert(value, Some(configuration.clone()));
             }
         }
 
