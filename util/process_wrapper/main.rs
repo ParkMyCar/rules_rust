@@ -63,14 +63,14 @@ impl std::error::Error for ProcessWrapperError {}
 
 macro_rules! log {
     ($($arg:tt)*) => {
-        if std::env::var_os("RULES_RUST_PROCESS_WRAPPER_DEBUG").is_some() {
-            eprintln!($($arg)*);
-        }
+        eprintln!($($arg)*);
     };
 }
 
 fn main() -> Result<(), ProcessWrapperError> {
     let opts = options().map_err(|e| ProcessWrapperError(e.to_string()))?;
+
+    log!("{:#?}", opts);
 
     let mut command = Command::new(opts.executable);
     command
