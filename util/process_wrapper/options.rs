@@ -332,5 +332,16 @@ fn environment_block(
             *value = new;
         }
     }
+
+    let cargo_manifest_dir = environment_variables.get_mut("CARGO_MANIFEST_DIR").cloned();
+    if let (Some(manifest), Some(out_dir)) = (cargo_manifest_dir, environment_variables.get_mut("OUT_DIR")) {
+        let out_dir_name = "__build_script.out_dir";
+        let mut new_out_dir = std::path::PathBuf::from(manifest);
+        new_out_dir.push(out_dir_name);
+
+        std::os::unix::fs::symlink(&out_dir, new_out_dir).expect("failed to symlink");
+        *out_dir = out_dir_name.to_string();
+    }
+
     environment_variables
 }
