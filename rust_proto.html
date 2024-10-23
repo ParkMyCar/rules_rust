@@ -325,7 +325,7 @@ simply use <a href="./crate_universe.html">crate_universe</a> in a more
 complex scenario (with more dependencies), you must redefine those
 dependencies.</p>
 <p>To do this, once you've imported the needed dependencies (see our
-<a href="https://github.com/bazelbuild/rules_rust/blob/main/proto/3rdparty/BUILD.bazel">@rules_rust//proto/3rdparty/BUILD.bazel</a>
+<a href="https://github.com/bazelbuild/rules_rust/blob/main/proto/protobuf/3rdparty/BUILD.bazel">@rules_rust//proto/protobuf/3rdparty/BUILD.bazel</a>
 file to see the default dependencies), you need to create your own toolchain.
 To do so you can create a BUILD file with your toolchain definition, for example:</p>
 <pre><code class="language-python">load("@rules_rust//proto:toolchain.bzl", "rust_proto_toolchain")
@@ -413,13 +413,15 @@ rust_binary(
 <p><a id="rust_prost_toolchain"></a></p>
 <h2 id="rust_prost_toolchain"><a class="header" href="#rust_prost_toolchain">rust_prost_toolchain</a></h2>
 <pre>
-rust_prost_toolchain(<a href="#rust_prost_toolchain-name">name</a>, <a href="#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>, <a href="#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="#rust_prost_toolchain-prost_types">prost_types</a>,
-                     <a href="#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>, <a href="#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
+rust_prost_toolchain(<a href="#rust_prost_toolchain-name">name</a>, <a href="#rust_prost_toolchain-include_transitive_deps">include_transitive_deps</a>, <a href="#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>,
+                     <a href="#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="#rust_prost_toolchain-prost_types">prost_types</a>, <a href="#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>,
+                     <a href="#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
 </pre>
 <p>Rust Prost toolchain rule.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
 <tr><td style="text-align: left"><a id="rust_prost_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-include_transitive_deps"></a>include_transitive_deps</td><td style="text-align: left">Whether to include transitive dependencies. If set to True, all transitive dependencies will directly accessible by the dependent crate.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_opts"></a>prost_opts</td><td style="text-align: left">Additional options to add to Prost.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin"></a>prost_plugin</td><td style="text-align: left">Additional plugins to add to Prost.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
 <tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin_flag"></a>prost_plugin_flag</td><td style="text-align: left">Prost plugin flag format. (e.g. <code>--plugin=protoc-gen-prost=%s</code>)</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-prost=%s"</code></td></tr>
