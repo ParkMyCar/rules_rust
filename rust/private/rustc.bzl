@@ -722,6 +722,8 @@ def collect_inputs(
             build_info_inputs.append(build_info.rustc_env)
         if build_info.flags:
             build_info_inputs.append(build_info.flags)
+        if build_info.out_dir:
+            build_info_inputs.append(build_info.out_dir)
 
     nolinkstamp_compile_inputs = depset(
         getattr(files, "data", []) +

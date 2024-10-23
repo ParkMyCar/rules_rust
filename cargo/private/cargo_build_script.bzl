@@ -243,7 +243,7 @@ def _cargo_build_script_impl(ctx):
     script = ctx.executable.script
     script_info = ctx.attr.script[CargoBuildScriptRunfilesInfo]
     toolchain = find_toolchain(ctx)
-    out_dir = ctx.actions.declare_directory(ctx.label.name + ".out_dir")
+    out_dir = ctx.actions.declare_directory("__bazel__.out_dir")
     env_out = ctx.actions.declare_file(ctx.label.name + ".env")
     dep_env_out = ctx.actions.declare_file(ctx.label.name + ".depenv")
     flags_out = ctx.actions.declare_file(ctx.label.name + ".flags")
