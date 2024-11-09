@@ -35,7 +35,7 @@ ClippyFlagsInfo = provider(
 )
 
 def _clippy_flag_impl(ctx):
-    return ClippyFlagsInfo(clippy_flags = [f for f in ctx.build_setting_value if f != ""])
+    return (clippy_flags = [f for f in ctx.build_setting_value if f != ""])
 
 clippy_flag = rule(
     doc = (
@@ -144,6 +144,11 @@ def _clippy_aspect_impl(target, ctx):
         args.rustc_flags.add("--test")
 
     clippy_flags = ctx.attr._clippy_flags[ClippyFlagsInfo].clippy_flags
+
+    if hasattr(ctx.attr, "lints"):
+        print("HELLO WORLD")
+    else:
+        print("NO LINTS")
 
     if hasattr(ctx.attr, "_clippy_flag"):
         clippy_flags = clippy_flags + ctx.attr._clippy_flag[ClippyFlagsInfo].clippy_flags
@@ -307,6 +312,10 @@ rust_clippy = rule(
             ],
             aspects = [rust_clippy_aspect],
         ),
+        "lints": attr.label(
+            doc = "Group of lints to apply when running clippy.",
+            providers = [[ClippyFlagsInfo]],
+        ),
     },
     doc = """\
 Executes the clippy checker on a specific target.
@@ -363,4 +372,77 @@ capture_clippy_output = rule(
     doc = "Control whether to print clippy output or store it to a file, using the configured error_format.",
     implementation = _capture_clippy_output_impl,
     build_setting = config.bool(flag = True),
+)
+
+def _rust_clippy_lint_group_impl(ctx):
+    """Implementation of the `rust_clippy_lint_group` rule.
+
+    Args:
+        ctx (ctx): The rule's context object.
+
+    Returns:
+        list: A list containing the ClippyFlagsInfo provider.
+    """
+
+    flags = []
+    for lint, level in ctx.attr.lints.items():
+        if level == "allow":
+            abbrev = "A"
+        elif level == "warn":
+            abbrev = "W"
+        elif level == "deny":
+            abbrev = "D"
+        else:
+            fail("Invalid lint level '{0}'".format(level))
+
+        flags.append("-{LEVEL} clippy::{LINT}".format(LEVEL = abbrev, LINT = lint))
+
+    return [ClippyFlagsInfo(clippy_flags = flags)]
+
+rust_clippy_lint_group = rule(
+    implementation = _rust_clippy_lint_group_impl,
+    attrs = {
+        "lints": attr.string_dict(
+            doc = "Lints to 'allow', 'warn', or 'deny'.",
+            mandatory = True,
+        ),
+    },
+    doc = """\
+Defines a group of lints that can be applied when running clippy.
+
+Similar to specifying `--@rules_rust//:clippy_flags`, but defined in a single target.
+
+For example, you can define a single group of lints:
+
+```python
+load("@rules_rust//rust:defs.bzl", "rust_clippy_lint_group")
+
+rust_clippy_lint_group(
+    name = "workspace_lints",
+    lints = {
+        "box_default": "allow",
+        "todo": "warn",
+        "unused_async": "warn",
+    },
+)
+```
+
+Which can later be referenced by `rust_clippy` targets:
+
+```python
+load("@rules_rust//rust:defs.bzl", "rust_clippy")
+
+rust_clippy(
+    name = "hello_library_clippy",
+    testonly = True,
+    deps = [
+        ":hello_lib",
+        ":greeting_test",
+    ],
+    lints = [
+        ":workspace_lints",
+    ],
+)
+```
+""",
 )
