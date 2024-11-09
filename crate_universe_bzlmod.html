@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light" dir="ltr">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,7 +7,7 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
@@ -30,15 +30,17 @@
 
         <!-- Custom theme stylesheets -->
 
-    </head>
-    <body class="sidebar-visible no-js">
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -60,19 +62,16 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            var body = document.querySelector('body');
-            body.classList.remove('no-js')
-            body.classList.add('js');
+            html.classList.add("js");
         </script>
 
         <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var body = document.querySelector('body');
             var sidebar = null;
             var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
@@ -82,45 +81,25 @@
                 sidebar = 'hidden';
             }
             sidebar_toggle.checked = sidebar === 'visible';
-            body.classList.remove('sidebar-visible');
-            body.classList.add("sidebar-" + sidebar);
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="rules.html"><strong aria-hidden="true">1.</strong> Rules</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rust.html"><strong aria-hidden="true">1.1.</strong> rust</a></li><li class="chapter-item expanded "><a href="rust_doc.html"><strong aria-hidden="true">1.2.</strong> rustdoc</a></li><li class="chapter-item expanded "><a href="rust_clippy.html"><strong aria-hidden="true">1.3.</strong> clippy</a></li><li class="chapter-item expanded "><a href="rust_fmt.html"><strong aria-hidden="true">1.4.</strong> rustfmt</a></li><li class="chapter-item expanded "><a href="rust_proto.html"><strong aria-hidden="true">1.5.</strong> proto</a></li><li class="chapter-item expanded "><a href="rust_bindgen.html"><strong aria-hidden="true">1.6.</strong> bindgen</a></li><li class="chapter-item expanded "><a href="rust_wasm_bindgen.html"><strong aria-hidden="true">1.7.</strong> wasm_bindgen</a></li><li class="chapter-item expanded "><a href="cargo.html"><strong aria-hidden="true">1.8.</strong> cargo</a></li><li class="chapter-item expanded "><a href="rust_analyzer.html"><strong aria-hidden="true">1.9.</strong> rust_analyzer</a></li><li class="chapter-item expanded "><a href="flatten.html"><strong aria-hidden="true">1.10.</strong> all symbols</a></li></ol></li><li class="chapter-item expanded "><a href="external_crates.html"><strong aria-hidden="true">2.</strong> External Crates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="crate_universe_bzlmod.html" class="active"><strong aria-hidden="true">2.1.</strong> crate_universe (bzlmod)</a></li><li class="chapter-item expanded "><a href="crate_universe.html"><strong aria-hidden="true">2.2.</strong> crate_universe (WORKSPACE)</a></li></ol></li><li class="chapter-item expanded "><a href="upstream_tooling.html"><strong aria-hidden="true">3.</strong> Upstream Tooling</a></li></ol>
-            </div>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <!-- Track and set sidebar scroll position -->
-        <script>
-            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
-            sidebarScrollbox.addEventListener('click', function(e) {
-                if (e.target.tagName === 'A') {
-                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
-                }
-            }, { passive: true });
-            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
-            sessionStorage.removeItem('sidebar-scroll');
-            if (sidebarScrollTop) {
-                // preserve sidebar scroll position when navigating via links within sidebar
-                sidebarScrollbox.scrollTop = sidebarScrollTop;
-            } else {
-                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
-                var activeSection = document.querySelector('#sidebar .active');
-                if (activeSection) {
-                    activeSection.scrollIntoView({ block: 'center' });
-                }
-            }
-        </script>
-
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
                         <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
@@ -443,7 +422,7 @@ sys_deps()
 <pre>
 crate = use_extension("@rules_rust//crate_universe:docs_bzlmod.bzl", "crate")
 crate.from_cargo(<a href="#crate.from_cargo-name">name</a>, <a href="#crate.from_cargo-cargo_config">cargo_config</a>, <a href="#crate.from_cargo-cargo_lockfile">cargo_lockfile</a>, <a href="#crate.from_cargo-generate_binaries">generate_binaries</a>, <a href="#crate.from_cargo-generate_build_scripts">generate_build_scripts</a>,
-                 <a href="#crate.from_cargo-manifests">manifests</a>, <a href="#crate.from_cargo-supported_platform_triples">supported_platform_triples</a>)
+                 <a href="#crate.from_cargo-manifests">manifests</a>, <a href="#crate.from_cargo-splicing_config">splicing_config</a>, <a href="#crate.from_cargo-supported_platform_triples">supported_platform_triples</a>)
 crate.annotation(<a href="#crate.annotation-deps">deps</a>, <a href="#crate.annotation-data">data</a>, <a href="#crate.annotation-additive_build_file">additive_build_file</a>, <a href="#crate.annotation-additive_build_file_content">additive_build_file_content</a>, <a href="#crate.annotation-alias_rule">alias_rule</a>,
                  <a href="#crate.annotation-build_script_data">build_script_data</a>, <a href="#crate.annotation-build_script_data_glob">build_script_data_glob</a>, <a href="#crate.annotation-build_script_deps">build_script_deps</a>, <a href="#crate.annotation-build_script_env">build_script_env</a>,
                  <a href="#crate.annotation-build_script_proc_macro_deps">build_script_proc_macro_deps</a>, <a href="#crate.annotation-build_script_rundir">build_script_rundir</a>, <a href="#crate.annotation-build_script_rustc_env">build_script_rustc_env</a>,
@@ -453,7 +432,7 @@ crate.annotation(<a href="#crate.annotation-deps">deps</a>, <a href="#crate.anno
                  <a href="#crate.annotation-override_target_build_script">override_target_build_script</a>, <a href="#crate.annotation-override_target_lib">override_target_lib</a>, <a href="#crate.annotation-override_target_proc_macro">override_target_proc_macro</a>,
                  <a href="#crate.annotation-patch_args">patch_args</a>, <a href="#crate.annotation-patch_tool">patch_tool</a>, <a href="#crate.annotation-patches">patches</a>, <a href="#crate.annotation-proc_macro_deps">proc_macro_deps</a>, <a href="#crate.annotation-repositories">repositories</a>, <a href="#crate.annotation-rustc_env">rustc_env</a>,
                  <a href="#crate.annotation-rustc_env_files">rustc_env_files</a>, <a href="#crate.annotation-rustc_flags">rustc_flags</a>, <a href="#crate.annotation-shallow_since">shallow_since</a>, <a href="#crate.annotation-version">version</a>)
-crate.from_specs(<a href="#crate.from_specs-name">name</a>, <a href="#crate.from_specs-cargo_config">cargo_config</a>, <a href="#crate.from_specs-generate_binaries">generate_binaries</a>, <a href="#crate.from_specs-generate_build_scripts">generate_build_scripts</a>,
+crate.from_specs(<a href="#crate.from_specs-name">name</a>, <a href="#crate.from_specs-cargo_config">cargo_config</a>, <a href="#crate.from_specs-generate_binaries">generate_binaries</a>, <a href="#crate.from_specs-generate_build_scripts">generate_build_scripts</a>, <a href="#crate.from_specs-splicing_config">splicing_config</a>,
                  <a href="#crate.from_specs-supported_platform_triples">supported_platform_triples</a>)
 crate.spec(<a href="#crate.spec-artifact">artifact</a>, <a href="#crate.spec-branch">branch</a>, <a href="#crate.spec-default_features">default_features</a>, <a href="#crate.spec-features">features</a>, <a href="#crate.spec-git">git</a>, <a href="#crate.spec-lib">lib</a>, <a href="#crate.spec-package">package</a>, <a href="#crate.spec-rev">rev</a>, <a href="#crate.spec-tag">tag</a>, <a href="#crate.spec-version">version</a>)
 </pre>
@@ -469,7 +448,8 @@ crate.spec(<a href="#crate.spec-artifact">artifact</a>, <a href="#crate.spec-bra
 <tr><td style="text-align: left"><a id="crate.from_cargo-generate_binaries"></a>generate_binaries</td><td style="text-align: left">Whether to generate <code>rust_binary</code> targets for all the binary crates in every package. By default only the <code>rust_library</code> targets are generated.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_cargo-generate_build_scripts"></a>generate_build_scripts</td><td style="text-align: left">Whether or not to generate <a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html">cargo build scripts</a> by default.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_cargo-manifests"></a>manifests</td><td style="text-align: left">A list of Cargo manifests (<code>Cargo.toml</code> files).</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="crate.from_cargo-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_cargo-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_cargo-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="crate.annotation"></a></p>
@@ -525,7 +505,8 @@ crate.spec(<a href="#crate.spec-artifact">artifact</a>, <a href="#crate.spec-bra
 <tr><td style="text-align: left"><a id="crate.from_specs-cargo_config"></a>cargo_config</td><td style="text-align: left">A <a href="https://doc.rust-lang.org/cargo/reference/config.html">Cargo configuration</a> file.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_specs-generate_binaries"></a>generate_binaries</td><td style="text-align: left">Whether to generate <code>rust_binary</code> targets for all the binary crates in every package. By default only the <code>rust_library</code> targets are generated.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_specs-generate_build_scripts"></a>generate_build_scripts</td><td style="text-align: left">Whether or not to generate <a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html">cargo build scripts</a> by default.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
-<tr><td style="text-align: left"><a id="crate.from_specs-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_specs-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_specs-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="crate.spec"></a></p>

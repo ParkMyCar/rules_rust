@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="light" dir="ltr">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,7 +7,7 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
@@ -30,15 +30,17 @@
 
         <!-- Custom theme stylesheets -->
 
-    </head>
-    <body class="sidebar-visible no-js">
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -60,19 +62,16 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            var body = document.querySelector('body');
-            body.classList.remove('no-js')
-            body.classList.add('js');
+            html.classList.add("js");
         </script>
 
         <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var body = document.querySelector('body');
             var sidebar = null;
             var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
@@ -82,45 +81,25 @@
                 sidebar = 'hidden';
             }
             sidebar_toggle.checked = sidebar === 'visible';
-            body.classList.remove('sidebar-visible');
-            body.classList.add("sidebar-" + sidebar);
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="rules.html"><strong aria-hidden="true">1.</strong> Rules</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="rust.html" class="active"><strong aria-hidden="true">1.1.</strong> rust</a></li><li class="chapter-item expanded "><a href="rust_doc.html"><strong aria-hidden="true">1.2.</strong> rustdoc</a></li><li class="chapter-item expanded "><a href="rust_clippy.html"><strong aria-hidden="true">1.3.</strong> clippy</a></li><li class="chapter-item expanded "><a href="rust_fmt.html"><strong aria-hidden="true">1.4.</strong> rustfmt</a></li><li class="chapter-item expanded "><a href="rust_proto.html"><strong aria-hidden="true">1.5.</strong> proto</a></li><li class="chapter-item expanded "><a href="rust_bindgen.html"><strong aria-hidden="true">1.6.</strong> bindgen</a></li><li class="chapter-item expanded "><a href="rust_wasm_bindgen.html"><strong aria-hidden="true">1.7.</strong> wasm_bindgen</a></li><li class="chapter-item expanded "><a href="cargo.html"><strong aria-hidden="true">1.8.</strong> cargo</a></li><li class="chapter-item expanded "><a href="rust_analyzer.html"><strong aria-hidden="true">1.9.</strong> rust_analyzer</a></li><li class="chapter-item expanded "><a href="flatten.html"><strong aria-hidden="true">1.10.</strong> all symbols</a></li></ol></li><li class="chapter-item expanded "><a href="external_crates.html"><strong aria-hidden="true">2.</strong> External Crates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="crate_universe_bzlmod.html"><strong aria-hidden="true">2.1.</strong> crate_universe (bzlmod)</a></li><li class="chapter-item expanded "><a href="crate_universe.html"><strong aria-hidden="true">2.2.</strong> crate_universe (WORKSPACE)</a></li></ol></li><li class="chapter-item expanded "><a href="upstream_tooling.html"><strong aria-hidden="true">3.</strong> Upstream Tooling</a></li></ol>
-            </div>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <!-- Track and set sidebar scroll position -->
-        <script>
-            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
-            sidebarScrollbox.addEventListener('click', function(e) {
-                if (e.target.tagName === 'A') {
-                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
-                }
-            }, { passive: true });
-            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
-            sessionStorage.removeItem('sidebar-scroll');
-            if (sidebarScrollTop) {
-                // preserve sidebar scroll position when navigating via links within sidebar
-                sidebarScrollbox.scrollTop = sidebarScrollTop;
-            } else {
-                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
-                var activeSection = document.querySelector('#sidebar .active');
-                if (activeSection) {
-                    activeSection.scrollIntoView({ block: 'center' });
-                }
-            }
-        </script>
-
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
                         <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
@@ -239,10 +218,10 @@ extra_rustc_flags(<a href="#extra_rustc_flags-name">name</a>)
 <p><a id="rust_binary"></a></p>
 <h2 id="rust_binary"><a class="header" href="#rust_binary">rust_binary</a></h2>
 <pre>
-rust_binary(<a href="#rust_binary-name">name</a>, <a href="#rust_binary-deps">deps</a>, <a href="#rust_binary-srcs">srcs</a>, <a href="#rust_binary-data">data</a>, <a href="#rust_binary-aliases">aliases</a>, <a href="#rust_binary-alwayslink">alwayslink</a>, <a href="#rust_binary-compile_data">compile_data</a>, <a href="#rust_binary-crate_features">crate_features</a>, <a href="#rust_binary-crate_name">crate_name</a>,
-            <a href="#rust_binary-crate_root">crate_root</a>, <a href="#rust_binary-crate_type">crate_type</a>, <a href="#rust_binary-edition">edition</a>, <a href="#rust_binary-env">env</a>, <a href="#rust_binary-experimental_use_cc_common_link">experimental_use_cc_common_link</a>, <a href="#rust_binary-linker_script">linker_script</a>,
-            <a href="#rust_binary-malloc">malloc</a>, <a href="#rust_binary-out_binary">out_binary</a>, <a href="#rust_binary-platform">platform</a>, <a href="#rust_binary-proc_macro_deps">proc_macro_deps</a>, <a href="#rust_binary-rustc_env">rustc_env</a>, <a href="#rust_binary-rustc_env_files">rustc_env_files</a>, <a href="#rust_binary-rustc_flags">rustc_flags</a>,
-            <a href="#rust_binary-stamp">stamp</a>, <a href="#rust_binary-version">version</a>)
+rust_binary(<a href="#rust_binary-name">name</a>, <a href="#rust_binary-deps">deps</a>, <a href="#rust_binary-srcs">srcs</a>, <a href="#rust_binary-data">data</a>, <a href="#rust_binary-aliases">aliases</a>, <a href="#rust_binary-alwayslink">alwayslink</a>, <a href="#rust_binary-binary_name">binary_name</a>, <a href="#rust_binary-compile_data">compile_data</a>, <a href="#rust_binary-crate_features">crate_features</a>,
+            <a href="#rust_binary-crate_name">crate_name</a>, <a href="#rust_binary-crate_root">crate_root</a>, <a href="#rust_binary-crate_type">crate_type</a>, <a href="#rust_binary-edition">edition</a>, <a href="#rust_binary-env">env</a>, <a href="#rust_binary-experimental_use_cc_common_link">experimental_use_cc_common_link</a>,
+            <a href="#rust_binary-linker_script">linker_script</a>, <a href="#rust_binary-malloc">malloc</a>, <a href="#rust_binary-out_binary">out_binary</a>, <a href="#rust_binary-platform">platform</a>, <a href="#rust_binary-proc_macro_deps">proc_macro_deps</a>, <a href="#rust_binary-rustc_env">rustc_env</a>, <a href="#rust_binary-rustc_env_files">rustc_env_files</a>,
+            <a href="#rust_binary-rustc_flags">rustc_flags</a>, <a href="#rust_binary-stamp">stamp</a>, <a href="#rust_binary-version">version</a>)
 </pre>
 <p>Builds a Rust binary crate.</p>
 <p>Example:</p>
@@ -324,6 +303,7 @@ is available under the key <code>dsym_folder</code> in <code>OutputGroupInfo</co
 <tr><td style="text-align: left"><a id="rust_binary-data"></a>data</td><td style="text-align: left">List of files used by this rule at compile time and runtime.<br><br>If including data at compile time with include_str!() and similar, prefer <code>compile_data</code> over <code>data</code>, to prevent the data also being included in the runfiles.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_binary-aliases"></a>aliases</td><td style="text-align: left">Remap crates to a new name or moniker for linkage to this target<br><br>These are other <code>rust_library</code> targets and will be presented as the new name given.</td><td style="text-align: left"><a href="https://bazel.build/rules/lib/dict">Dictionary: Label -&gt; String</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>{}</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_binary-alwayslink"></a>alwayslink</td><td style="text-align: left">If 1, any binary that depends (directly or indirectly) on this library will link in all the object files even if some contain no symbols referenced by the binary.<br><br>This attribute is used by the C++ Starlark API when passing CcInfo providers.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_binary-binary_name"></a>binary_name</td><td style="text-align: left">Override the resulting binary file name. By default, the binary file will be named using the <code>name</code> attribute on this rule, however sometimes that is not deseriable.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_binary-compile_data"></a>compile_data</td><td style="text-align: left">List of files used by this rule at compile time.<br><br>This attribute can be used to specify any data files that are embedded into the library, such as via the <a href="https://doc.rust-lang.org/std/macro.include_str!.html"><code>include_str!</code></a> macro.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_binary-crate_features"></a>crate_features</td><td style="text-align: left">List of features to enable for this crate.<br><br>Features are defined in the code using the <code>#[cfg(feature = "foo")]</code> configuration option. The features listed here will be passed to <code>rustc</code> with <code>--cfg feature="${feature_name}"</code> flags.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_binary-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
