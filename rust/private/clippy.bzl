@@ -35,7 +35,7 @@ ClippyFlagsInfo = provider(
 )
 
 def _clippy_flag_impl(ctx):
-    return (clippy_flags = [f for f in ctx.build_setting_value if f != ""])
+    return ClippyFlagsInfo(clippy_flags = [f for f in ctx.build_setting_value if f != ""])
 
 clippy_flag = rule(
     doc = (
