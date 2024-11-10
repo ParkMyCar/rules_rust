@@ -14,6 +14,10 @@ load("//crate_universe/tools/cross_installer:cross_installer_deps.bzl", "cross_i
 
 cross_installer_deps()
 
+load("//cargo/cargo_toml_info/3rdparty/crates:defs.bzl", cargo_toml_info_crate_repositories = "crate_repositories")
+
+cargo_toml_info_crate_repositories()
+
 # buildifier: disable=bzl-visibility
 load("@rules_rust//proto/prost/private:repositories.bzl", "rust_prost_dependencies", "rust_prost_register_toolchains")
 
