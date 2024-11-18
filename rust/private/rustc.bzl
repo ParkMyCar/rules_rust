@@ -783,6 +783,7 @@ def collect_inputs(
         dep_info = dep_info,
         include_link_flags = include_link_flags,
     )
+
     # TODO(parkmycar): Cleanup the handling of lint_files here.
     if lint_files:
         build_flags_files = depset(lint_files, transitive = [build_flags_files])
@@ -1197,7 +1198,7 @@ def rustc_compile_action(
     # Add flags for any 'rustc' lints that are specified.
     lint_files = []
     if hasattr(ctx.attr, "lints") and ctx.attr.lints:
-        rust_flags = rust_flags + ctx.attr.lints[LintsInfo].rustc_lints
+        rust_flags = rust_flags + ctx.attr.lints[LintsInfo].rustc_lint_flags
         lint_files = lint_files + ctx.attr.lints[LintsInfo].rustc_lint_files
 
     compile_inputs, out_dir, build_env_files, build_flags_files, linkstamp_outs, ambiguous_libs = collect_inputs(
@@ -1556,7 +1557,7 @@ def rustc_compile_action(
 
     if output_group_info:
         providers.append(OutputGroupInfo(**output_group_info))
-    
+
     # A bit unfortunate, but sidecar the lints info so rustdoc can access the
     # set of lints from the target it is documenting.
     if hasattr(ctx.attr, "lints") and ctx.attr.lints:
