@@ -156,27 +156,24 @@
                 <div id="content" class="content">
                     <main>
                         <!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-bindgen"><a class="header" href="#rust-bindgen">Rust Bindgen</a></h1>
-<ul>
-<li><a href="#rust_bindgen_library">rust_bindgen_library</a></li>
-<li><a href="#rust_bindgen">rust_bindgen</a></li>
-<li><a href="#rust_bindgen_toolchain">rust_bindgen_toolchain</a></li>
-<li><a href="#rust_bindgen_dependencies">rust_bindgen_dependencies</a></li>
-<li><a href="#rust_bindgen_register_toolchains">rust_bindgen_register_toolchains</a></li>
-</ul>
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<h1 id="rules_rust_bindgen"><a class="header" href="#rules_rust_bindgen">rules_rust_bindgen</a></h1>
 <p>These rules are for using <a href="https://github.com/rust-lang/rust-bindgen">Bindgen</a> to generate <a href="http://www.rust-lang.org/">Rust</a> bindings to C (and some C++) libraries.</p>
-<p>See the <a href="https://github.com/bazelbuild/rules_rust/tree/main/examples/bindgen/BUILD.bazel">bindgen example</a> for a more complete example of use.</p>
-<h3 id="setup"><a class="header" href="#setup">Setup</a></h3>
+<h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
+<ul>
+<li><a href="#rust_bindgen">rust_bindgen</a></li>
+<li><a href="#rust_bindgen_library">rust_bindgen_library</a></li>
+<li><a href="#rust_bindgen_toolchain">rust_bindgen_toolchain</a></li>
+</ul>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
 <p>To use the Rust bindgen rules, add the following to your <code>WORKSPACE</code> file to add the
 external repositories for the Rust bindgen toolchain (in addition to the <a href="https://bazelbuild.github.io/rules_rust/#setup">rust rules setup</a>):</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies", "rust_bindgen_register_toolchains")
+<pre><code class="language-python">load("@rules_rust_bindgen//:repositories.bzl", "rust_bindgen_dependencies", "rust_bindgen_register_toolchains")
 
 rust_bindgen_dependencies()
 
 rust_bindgen_register_toolchains()
 
-load("@rules_rust//bindgen:transitive_repositories.bzl", "rust_bindgen_transitive_dependencies")
+load("@rules_rust_bindgen//:transitive_repositories.bzl", "rust_bindgen_transitive_dependencies")
 
 rust_bindgen_transitive_dependencies()
 </code></pre>
@@ -213,7 +210,7 @@ rust_bindgen_toolchain(<a href="#rust_bindgen_toolchain-name">name</a>, <a href=
 <p>This rule depends on the <a href="https://crates.io/crates/bindgen"><code>bindgen</code></a> binary crate, and it
 in turn depends on both a clang binary and the clang library. To obtain these dependencies,
 <code>rust_bindgen_dependencies</code> imports bindgen and its dependencies.</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_toolchain")
+<pre><code class="language-python">load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
 
 rust_bindgen_toolchain(
     name = "bindgen_toolchain_impl",
@@ -226,7 +223,7 @@ rust_bindgen_toolchain(
 toolchain(
     name = "bindgen_toolchain",
     toolchain = "bindgen_toolchain_impl",
-    toolchain_type = "@rules_rust//bindgen:toolchain_type",
+    toolchain_type = "@rules_rust_bindgen//:toolchain_type",
 )
 </code></pre>
 <p>This toolchain will then need to be registered in the current <code>WORKSPACE</code>.
@@ -241,15 +238,6 @@ For additional information, see the <a href="https://docs.bazel.build/versions/m
 <tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libstdcxx"></a>libstdcxx</td><td style="text-align: left">A cc_library that satisfies libclang's libstdc++ dependency. This is used to make the execution of clang hermetic. If None, system libraries will be used instead.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 </tbody></table>
 </div>
-<p><a id="rust_bindgen_dependencies"></a></p>
-<h2 id="rust_bindgen_dependencies"><a class="header" href="#rust_bindgen_dependencies">rust_bindgen_dependencies</a></h2>
-<pre>
-rust_bindgen_dependencies()
-</pre>
-<p>Declare dependencies needed for bindgen.</p>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
 <p><a id="rust_bindgen_library"></a></p>
 <h2 id="rust_bindgen_library"><a class="header" href="#rust_bindgen_library">rust_bindgen_library</a></h2>
 <pre>
@@ -270,26 +258,15 @@ rust_bindgen_library(<a href="#rust_bindgen_library-name">name</a>, <a href="#ru
 <tr><td style="text-align: left"><a id="rust_bindgen_library-kwargs"></a>kwargs</td><td style="text-align: left">Arguments to forward to the underlying <code>rust_library</code> rule.</td><td style="text-align: left">none</td></tr>
 </tbody></table>
 </div>
-<p><a id="rust_bindgen_register_toolchains"></a></p>
-<h2 id="rust_bindgen_register_toolchains"><a class="header" href="#rust_bindgen_register_toolchains">rust_bindgen_register_toolchains</a></h2>
-<pre>
-rust_bindgen_register_toolchains(<a href="#rust_bindgen_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Registers the default toolchains for the <code>rules_rust</code> <a href="https://rust-lang.github.io/rust-bindgen/">bindgen</a> rules.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left">Whether or not to register toolchains.</td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="rust_proto.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="extensions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="rust_wasm_bindgen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rust_prost.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -299,11 +276,11 @@ rust_bindgen_register_toolchains(<a href="#rust_bindgen_register_toolchains-regi
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="rust_proto.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="extensions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="rust_wasm_bindgen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rust_prost.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

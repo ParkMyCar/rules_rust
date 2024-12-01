@@ -233,7 +233,8 @@ also be set in the project's <code>.bazelrc</code> file.</p>
 <h2 id="3rd-party-rules"><a class="header" href="#3rd-party-rules">3rd party rules</a></h2>
 <ul>
 <li><a href="rust_bindgen.html">rust_bindgen</a>: rules for generating C++ bindings.</li>
-<li><a href="rust_proto.html">rust_proto</a>: rules for generating <a href="https://developers.google.com/protocol-buffers">protobuf</a> and <a href="https://grpc.io">gRPC</a> stubs.</li>
+<li><a href="rust_prost.html">rust_prost</a>: rules for generating <a href="https://developers.google.com/protocol-buffers">protobuf</a> and <a href="https://grpc.io">gRPC</a> stubs using <a href="https://github.com/tokio-rs/prost">prost</a>.</li>
+<li><a href="rust_protobuf.html">rust_protobuf</a>: rules for generating <a href="https://developers.google.com/protocol-buffers">protobuf</a> and <a href="https://grpc.io">gRPC</a> stubs with <a href="https://github.com/stepancheg/rust-protobuf/">rust-protobuf</a></li>
 <li><a href="rust_wasm_bindgen.html">rust_wasm_bindgen</a>: rules for generating <a href="https://www.rust-lang.org/what/wasm">WebAssembly</a> bindings.</li>
 </ul>
 <h2 id="full-api"><a class="header" href="#full-api">Full API</a></h2>
@@ -1071,600 +1072,6 @@ generated source files are also ignored by this aspect.</p>
 <tr><td style="text-align: left"><a id="rustfmt_aspect-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
 </tbody></table>
 </div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-proto"><a class="header" href="#rust-proto">Rust Proto</a></h1>
-<ul>
-<li><a href="rust_proto.html#rust_prost_library">rust_prost_library</a></li>
-<li><a href="rust_proto.html#rust_prost_toolchain">rust_prost_toolchain</a></li>
-<li><a href="rust_proto.html#rust_prost_dependencies">rust_prost_dependencies</a></li>
-<li><a href="rust_proto.html#rust_prost_transitive_repositories">rust_prost_transitive_repositories</a></li>
-<li><a href="rust_proto.html#rust_proto_library">rust_proto_library</a></li>
-<li><a href="rust_proto.html#rust_grpc_library">rust_grpc_library</a></li>
-<li><a href="rust_proto.html#rust_proto_protobuf_toolchain">rust_proto_protobuf_toolchain</a></li>
-<li><a href="rust_proto.html#rust_proto_protobuf_dependencies">rust_proto_protobuf_dependencies</a></li>
-<li><a href="rust_proto.html#rust_proto_protobuf_register_toolchains">rust_proto_protobuf_register_toolchains</a></li>
-<li><a href="rust_proto.html#rust_proto_protobuf_transitive_repositories">rust_proto_protobuf_transitive_repositories</a></li>
-</ul>
-<h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
-<p>These build rules are used for building <a href="https://developers.google.com/protocol-buffers/">protobufs</a>/<a href="https://grpc.io">gRPC</a> in <a href="http://www.rust-lang.org/">Rust</a> with Bazel.</p>
-<p>There are two rule sets. The first ruleset defines the <code>rust_prost_library</code> which generates Rust code
-using the <a href="https://crates.io/crates/prost"><code>prost</code></a> and <a href="https://crates.io/crates/tonic"><code>tonic</code></a> dependencies. The second ruleset defines the <code>rust_proto_library</code> and
-<code>rust_grpc_library</code> rules which generate Rust code using the <a href="https://github.com/stepancheg/rust-protobuf/"><code>rust-protobuf</code></a> dependencies.</p>
-<p>See the <a href="../examples/proto">protobuf example</a> for a more complete example of use.</p>
-<h3 id="prost-setup"><a class="header" href="#prost-setup">Prost Setup</a></h3>
-<pre><code class="language-python">load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
-
-rust_prost_dependencies()
-
-load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
-
-rust_prost_transitive_repositories()
-</code></pre>
-<p>The <code>prost</code> and <code>tonic</code> rules do not specify a default toolchain in order to avoid mismatched
-dependency issues. To setup the <code>prost</code> and <code>tonic</code> toolchain, please see the section
-<a href="rust_proto.html#custom-prost-deps">Customizing <code>prost</code> and <code>tonic</code> Dependencies</a>.</p>
-<p>For additional information about Bazel toolchains, see <a href="https://docs.bazel.build/versions/master/toolchains.html">here</a>.</p>
-<h4 id="customizing-prost-and-tonic-dependencies"><a class="header" href="#customizing-prost-and-tonic-dependencies"><a name="custom-prost-deps">Customizing <code>prost</code> and <code>tonic</code> Dependencies</a></h4>
-<p>These rules depend on the <a href="https://crates.io/crates/prost"><code>prost</code></a> and <a href="https://crates.io/crates/tonic"><code>tonic</code></a> dependencies. To setup the necessary toolchain
-for these rules, you must define a toolchain with the <a href="https://crates.io/crates/prost"><code>prost</code></a>, <a href="https://crates.io/crates/prost-types"><code>prost-types</code></a>, <a href="https://crates.io/crates/tonic"><code>tonic</code></a>, <a href="https://crates.io/crates/protoc-gen-prost"><code>protoc-gen-prost</code></a>, and <a href="https://crates.io/crates/protoc-gen-tonic"><code>protoc-gen-tonic</code></a> crates as well as the <a href="https://github.com/protocolbuffers/protobuf"><code>protoc</code></a> binary.</p>
-<p>To get access to these crates, you can use the <a href="./crate_universe.html">crate_universe</a> repository
-rules. For example:</p>
-<pre><code class="language-python">load("//crate_universe:defs.bzl", "crate", "crates_repository")
-
-crates_repository(
-    name = "crates_io",
-    annotations = {
-        "protoc-gen-prost": [crate.annotation(
-            gen_binaries = ["protoc-gen-prost"],
-            patch_args = [
-                "-p1",
-            ],
-            patches = [
-                # Note: You will need to use this patch until a version greater than `0.2.2` of
-                # `protoc-gen-prost` is released.
-                "@rules_rust//proto/prost/private/3rdparty/patches:protoc-gen-prost.patch",
-            ],
-        )],
-        "protoc-gen-tonic": [crate.annotation(
-            gen_binaries = ["protoc-gen-tonic"],
-        )],
-    },
-    cargo_lockfile = "Cargo.Bazel.lock",
-    mode = "remote",
-    packages = {
-        "prost": crate.spec(
-            version = "0",
-        ),
-        "prost-types": crate.spec(
-            version = "0",
-        ),
-        "protoc-gen-prost": crate.spec(
-            version = "0",
-        ),
-        "protoc-gen-tonic": crate.spec(
-            version = "0",
-        ),
-        "tonic": crate.spec(
-            version = "0",
-        ),
-    },
-    repository_name = "rules_rust_prost",
-    tags = ["manual"],
-)
-</code></pre>
-<p>You can then define a toolchain with the <code>rust_prost_toolchain</code> rule which uses the crates
-defined above. For example:</p>
-<pre><code class="language-python">load("@rules_rust//proto/prost:defs.bzl", "rust_prost_toolchain")
-load("@rules_rust//rust:defs.bzl", "rust_library_group")
-
-rust_library_group(
-    name = "prost_runtime",
-    deps = [
-        "@crates_io//:prost",
-    ],
-)
-
-rust_library_group(
-    name = "tonic_runtime",
-    deps = [
-        ":prost_runtime",
-        "@crates_io//:tonic",
-    ],
-)
-
-rust_prost_toolchain(
-    name = "prost_toolchain_impl",
-    prost_plugin = "@crates_io//:protoc-gen-prost__protoc-gen-prost",
-    prost_runtime = ":prost_runtime",
-    prost_types = "@crates_io//:prost-types",
-    proto_compiler = "@com_google_protobuf//:protoc",
-    tonic_plugin = "@crates_io//:protoc-gen-tonic__protoc-gen-tonic",
-    tonic_runtime = ":tonic_runtime",
-)
-
-toolchain(
-    name = "prost_toolchain",
-    toolchain = "prost_toolchain_impl",
-    toolchain_type = "@rules_rust//proto/prost:toolchain_type",
-)
-</code></pre>
-<p>Lastly, you must register the toolchain in your <code>WORKSPACE</code> file. For example:</p>
-<pre><code class="language-python">register_toolchains("//toolchains:prost_toolchain")
-</code></pre>
-<h2 id="rust-protobuf-setup"><a class="header" href="#rust-protobuf-setup">Rust-Protobuf Setup</a></h2>
-<p>To use the Rust proto rules, add the following to your <code>WORKSPACE</code> file to add the
-external repositories for the Rust proto toolchain (in addition to the <a href="..">rust rules setup</a>):</p>
-<pre><code class="language-python">load("@rules_rust//proto/protobuf:repositories.bzl", "rust_proto_protobuf_dependencies", "rust_proto_protobuf_register_toolchains")
-
-rust_proto_protobuf_dependencies()
-
-rust_proto_protobuf_register_toolchains()
-
-load("@rules_rust//proto/protobuf:transitive_repositories.bzl", "rust_proto_protobuf_transitive_repositories")
-
-rust_proto_protobuf_transitive_repositories()
-</code></pre>
-<p>This will load the required dependencies for the <a href="https://github.com/stepancheg/rust-protobuf/"><code>rust-protobuf</code></a> rules. It will also
-register a default toolchain for the <code>rust_proto_library</code> and <code>rust_grpc_library</code> rules.</p>
-<p>To customize the <code>rust_proto_library</code> and <code>rust_grpc_library</code> toolchain, please see the section
-<a href="rust_proto.html#custom-proto-deps">Customizing <code>rust-protobuf</code> Dependencies</a>.</p>
-<p>For additional information about Bazel toolchains, see <a href="https://docs.bazel.build/versions/master/toolchains.html">here</a>.</p>
-<h4 id="customizing-rust-protobuf-dependencies"><a class="header" href="#customizing-rust-protobuf-dependencies"><a name="custom-proto-deps">Customizing <code>rust-protobuf</code> Dependencies</a></h4>
-<p>These rules depend on the <a href="https://crates.io/crates/protobuf"><code>protobuf</code></a> and
-the <a href="https://crates.io/crates/grpc"><code>grpc</code></a> crates in addition to the <a href="https://github.com/google/protobuf">protobuf
-compiler</a>. To obtain these crates,
-<code>rust_proto_repositories</code> imports the given crates using BUILD files generated with
-<a href="./crate_universe.html">crate_universe</a>.</p>
-<p>If you want to either change the protobuf and gRPC rust compilers, or to
-simply use <a href="./crate_universe.html">crate_universe</a> in a more
-complex scenario (with more dependencies), you must redefine those
-dependencies.</p>
-<p>To do this, once you've imported the needed dependencies (see our
-<a href="https://github.com/bazelbuild/rules_rust/blob/main/proto/protobuf/3rdparty/BUILD.bazel">@rules_rust//proto/protobuf/3rdparty/BUILD.bazel</a>
-file to see the default dependencies), you need to create your own toolchain.
-To do so you can create a BUILD file with your toolchain definition, for example:</p>
-<pre><code class="language-python">load("@rules_rust//proto:toolchain.bzl", "rust_proto_toolchain")
-
-rust_proto_toolchain(
-    name = "proto-toolchain-impl",
-    # Path to the protobuf compiler.
-    protoc = "@com_google_protobuf//:protoc",
-    # Protobuf compiler plugin to generate rust gRPC stubs.
-    grpc_plugin = "//3rdparty/crates:cargo_bin_protoc_gen_rust_grpc",
-    # Protobuf compiler plugin to generate rust protobuf stubs.
-    proto_plugin = "//3rdparty/crates:cargo_bin_protoc_gen_rust",
-)
-
-toolchain(
-    name = "proto-toolchain",
-    toolchain = ":proto-toolchain-impl",
-    toolchain_type = "@rules_rust//proto/protobuf:toolchain_type",
-)
-</code></pre>
-<p>Now that you have your own toolchain, you need to register it by
-inserting the following statement in your <code>WORKSPACE</code> file:</p>
-<pre><code class="language-python">register_toolchains("//my/toolchains:proto-toolchain")
-</code></pre>
-<p>Finally, you might want to set the <code>rust_deps</code> attribute in
-<code>rust_proto_library</code> and <code>rust_grpc_library</code> to change the compile-time
-dependencies:</p>
-<pre><code class="language-python">rust_proto_library(
-    ...
-    rust_deps = ["//3rdparty/crates:protobuf"],
-    ...
-)
-
-rust_grpc_library(
-    ...
-    rust_deps = [
-        "//3rdparty/crates:protobuf",
-        "//3rdparty/crates:grpc",
-        "//3rdparty/crates:tls_api",
-        "//3rdparty/crates:tls_api_stub",
-    ],
-    ...
-)
-</code></pre>
-<p><strong>Note</strong>: Ideally, we would inject those dependencies from the toolchain,
-but due to <a href="https://github.com/bazelbuild/bazel/issues/6889">bazelbuild/bazel#6889</a>
-all dependencies added via the toolchain ends-up being in the wrong
-configuration.</p>
-<hr />
-<hr />
-<p><a id="rust_grpc_library"></a></p>
-<h2 id="rust_grpc_library"><a class="header" href="#rust_grpc_library">rust_grpc_library</a></h2>
-<pre>
-rust_grpc_library(<a href="rust_proto.html#rust_grpc_library-name">name</a>, <a href="rust_proto.html#rust_grpc_library-deps">deps</a>, <a href="rust_proto.html#rust_grpc_library-crate_name">crate_name</a>, <a href="rust_proto.html#rust_grpc_library-rust_deps">rust_deps</a>, <a href="rust_proto.html#rust_grpc_library-rustc_flags">rustc_flags</a>)
-</pre>
-<p>Builds a Rust library crate from a set of <code>proto_library</code>s suitable for gRPC.</p>
-<p>Example:</p>
-<pre><code class="language-python">load("@rules_rust//proto/protobuf:defs.bzl", "rust_grpc_library")
-
-proto_library(
-    name = "my_proto",
-    srcs = ["my.proto"]
-)
-
-rust_grpc_library(
-    name = "rust",
-    deps = [":my_proto"],
-)
-
-rust_binary(
-    name = "my_service",
-    srcs = ["my_service.rs"],
-    deps = [":rust"],
-)
-</code></pre>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_grpc_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding gRPC stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_toolchain"></a></p>
-<h2 id="rust_prost_toolchain"><a class="header" href="#rust_prost_toolchain">rust_prost_toolchain</a></h2>
-<pre>
-rust_prost_toolchain(<a href="rust_proto.html#rust_prost_toolchain-name">name</a>, <a href="rust_proto.html#rust_prost_toolchain-include_transitive_deps">include_transitive_deps</a>, <a href="rust_proto.html#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="rust_proto.html#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="rust_proto.html#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>,
-                     <a href="rust_proto.html#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="rust_proto.html#rust_prost_toolchain-prost_types">prost_types</a>, <a href="rust_proto.html#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="rust_proto.html#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="rust_proto.html#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>,
-                     <a href="rust_proto.html#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="rust_proto.html#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
-</pre>
-<p>Rust Prost toolchain rule.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-include_transitive_deps"></a>include_transitive_deps</td><td style="text-align: left">Whether to include transitive dependencies. If set to True, all transitive dependencies will directly accessible by the dependent crate.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_opts"></a>prost_opts</td><td style="text-align: left">Additional options to add to Prost.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin"></a>prost_plugin</td><td style="text-align: left">Additional plugins to add to Prost.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin_flag"></a>prost_plugin_flag</td><td style="text-align: left">Prost plugin flag format. (e.g. <code>--plugin=protoc-gen-prost=%s</code>)</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-prost=%s"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_runtime"></a>prost_runtime</td><td style="text-align: left">The Prost runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_types"></a>prost_types</td><td style="text-align: left">The Prost types crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-proto_compiler"></a>proto_compiler</td><td style="text-align: left">The protoc compiler to use. Note that this attribute is deprecated - prefer to use --incompatible_enable_proto_toolchain_resolution.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_opts"></a>tonic_opts</td><td style="text-align: left">Additional options to add to Tonic.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin"></a>tonic_plugin</td><td style="text-align: left">Additional plugins to add to Tonic.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin_flag"></a>tonic_plugin_flag</td><td style="text-align: left">Tonic plugin flag format. (e.g. <code>--plugin=protoc-gen-tonic=%s</code>))</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-tonic=%s"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_runtime"></a>tonic_runtime</td><td style="text-align: left">The Tonic runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_proto_library"></a></p>
-<h2 id="rust_proto_library"><a class="header" href="#rust_proto_library">rust_proto_library</a></h2>
-<pre>
-rust_proto_library(<a href="rust_proto.html#rust_proto_library-name">name</a>, <a href="rust_proto.html#rust_proto_library-deps">deps</a>, <a href="rust_proto.html#rust_proto_library-crate_name">crate_name</a>, <a href="rust_proto.html#rust_proto_library-rust_deps">rust_deps</a>, <a href="rust_proto.html#rust_proto_library-rustc_flags">rustc_flags</a>)
-</pre>
-<p>Builds a Rust library crate from a set of <code>proto_library</code>s.</p>
-<p>Example:</p>
-<pre><code class="language-python">load("@rules_rust//proto/protobuf:defs.bzl", "rust_proto_library")
-
-proto_library(
-    name = "my_proto",
-    srcs = ["my.proto"]
-)
-
-rust_proto_library(
-    name = "rust",
-    deps = [":my_proto"],
-)
-
-rust_binary(
-    name = "my_proto_binary",
-    srcs = ["my_proto_binary.rs"],
-    deps = [":rust"],
-)
-</code></pre>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_dependencies"></a></p>
-<h2 id="rust_prost_dependencies"><a class="header" href="#rust_prost_dependencies">rust_prost_dependencies</a></h2>
-<pre>
-rust_prost_dependencies(<a href="rust_proto.html#rust_prost_dependencies-bzlmod">bzlmod</a>)
-</pre>
-<p>Declares repositories needed for prost.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_dependencies-bzlmod"></a>bzlmod</td><td style="text-align: left">Whether bzlmod is enabled.</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_prost_library"></a></p>
-<h2 id="rust_prost_library"><a class="header" href="#rust_prost_library">rust_prost_library</a></h2>
-<pre>
-rust_prost_library(<a href="rust_proto.html#rust_prost_library-name">name</a>, <a href="rust_proto.html#rust_prost_library-kwargs">kwargs</a>)
-</pre>
-<p>A rule for generating a Rust library using Prost.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_library-name"></a>name</td><td style="text-align: left">The name of the target.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_library-kwargs"></a>kwargs</td><td style="text-align: left">Additional keyword arguments for the underlying <code>rust_prost_library</code> rule.</td><td style="text-align: left">none</td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_transitive_repositories"></a></p>
-<h2 id="rust_prost_transitive_repositories"><a class="header" href="#rust_prost_transitive_repositories">rust_prost_transitive_repositories</a></h2>
-<pre>
-rust_prost_transitive_repositories()
-</pre>
-<p>Load transitive dependencies of the <code>@rules_rust//proto/protobuf</code> rules.</p>
-<p>This macro should be called immediately after the <code>rust_protobuf_dependencies</code> macro.</p>
-<p><a id="rust_proto_protobuf_dependencies"></a></p>
-<h2 id="rust_proto_protobuf_dependencies"><a class="header" href="#rust_proto_protobuf_dependencies">rust_proto_protobuf_dependencies</a></h2>
-<pre>
-rust_proto_protobuf_dependencies(<a href="rust_proto.html#rust_proto_protobuf_dependencies-bzlmod">bzlmod</a>)
-</pre>
-<p>Sets up dependencies for rules_rust's proto support.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_protobuf_dependencies-bzlmod"></a>bzlmod</td><td style="text-align: left">Whether this function is being called from a bzlmod context rather than a workspace context.</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><strong>RETURNS</strong></p>
-<p>A list of structs containing information about root module deps to report to bzlmod's extension_metadata.</p>
-<p><a id="rust_proto_protobuf_register_toolchains"></a></p>
-<h2 id="rust_proto_protobuf_register_toolchains"><a class="header" href="#rust_proto_protobuf_register_toolchains">rust_proto_protobuf_register_toolchains</a></h2>
-<pre>
-rust_proto_protobuf_register_toolchains(<a href="rust_proto.html#rust_proto_protobuf_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Register toolchains for proto compilation.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_protobuf_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left"><p align="center"> - </p></td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_proto_protobuf_transitive_repositories"></a></p>
-<h2 id="rust_proto_protobuf_transitive_repositories"><a class="header" href="#rust_proto_protobuf_transitive_repositories">rust_proto_protobuf_transitive_repositories</a></h2>
-<pre>
-rust_proto_protobuf_transitive_repositories()
-</pre>
-<p>Load transitive dependencies of the <code>@rules_rust//proto/protobuf</code> rules.</p>
-<p>This macro should be called immediately after the <code>rust_protobuf_dependencies</code> macro.</p>
-<div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-bindgen"><a class="header" href="#rust-bindgen">Rust Bindgen</a></h1>
-<ul>
-<li><a href="rust_bindgen.html#rust_bindgen_library">rust_bindgen_library</a></li>
-<li><a href="rust_bindgen.html#rust_bindgen">rust_bindgen</a></li>
-<li><a href="rust_bindgen.html#rust_bindgen_toolchain">rust_bindgen_toolchain</a></li>
-<li><a href="rust_bindgen.html#rust_bindgen_dependencies">rust_bindgen_dependencies</a></li>
-<li><a href="rust_bindgen.html#rust_bindgen_register_toolchains">rust_bindgen_register_toolchains</a></li>
-</ul>
-<h2 id="overview-3"><a class="header" href="#overview-3">Overview</a></h2>
-<p>These rules are for using <a href="https://github.com/rust-lang/rust-bindgen">Bindgen</a> to generate <a href="http://www.rust-lang.org/">Rust</a> bindings to C (and some C++) libraries.</p>
-<p>See the <a href="https://github.com/bazelbuild/rules_rust/tree/main/examples/bindgen/BUILD.bazel">bindgen example</a> for a more complete example of use.</p>
-<h3 id="setup-3"><a class="header" href="#setup-3">Setup</a></h3>
-<p>To use the Rust bindgen rules, add the following to your <code>WORKSPACE</code> file to add the
-external repositories for the Rust bindgen toolchain (in addition to the <a href="https://bazelbuild.github.io/rules_rust/#setup">rust rules setup</a>):</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies", "rust_bindgen_register_toolchains")
-
-rust_bindgen_dependencies()
-
-rust_bindgen_register_toolchains()
-
-load("@rules_rust//bindgen:transitive_repositories.bzl", "rust_bindgen_transitive_dependencies")
-
-rust_bindgen_transitive_dependencies()
-</code></pre>
-<p>Bindgen aims to be as hermetic as possible so will end up building <code>libclang</code> from <a href="https://github.com/llvm/llvm-project">llvm-project</a> from
-source. If this is found to be undesirable then no Bindgen related calls should be added to your WORKSPACE and instead
-users should define their own repositories using something akin to <a href="https://bazelbuild.github.io/rules_rust/crate_universe.html">crate_universe</a> and define their own
-toolchains following the instructions for <a href="rust_bindgen.html#rust_bindgen_toolchain">rust_bindgen_toolchain</a>.</p>
-<hr />
-<hr />
-<p><a id="rust_bindgen"></a></p>
-<h2 id="rust_bindgen"><a class="header" href="#rust_bindgen">rust_bindgen</a></h2>
-<pre>
-rust_bindgen(<a href="rust_bindgen.html#rust_bindgen-name">name</a>, <a href="rust_bindgen.html#rust_bindgen-bindgen_flags">bindgen_flags</a>, <a href="rust_bindgen.html#rust_bindgen-cc_lib">cc_lib</a>, <a href="rust_bindgen.html#rust_bindgen-clang_flags">clang_flags</a>, <a href="rust_bindgen.html#rust_bindgen-header">header</a>, <a href="rust_bindgen.html#rust_bindgen-merge_cc_lib_objects_into_rlib">merge_cc_lib_objects_into_rlib</a>,
-             <a href="rust_bindgen.html#rust_bindgen-wrap_static_fns">wrap_static_fns</a>)
-</pre>
-<p>Generates a rust source file from a cc_library and a header.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-cc_lib"></a>cc_lib</td><td style="text-align: left">The cc_library that contains the <code>.h</code> file. This is used to find the transitive includes.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-header"></a>header</td><td style="text-align: left">The <code>.h</code> file to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-merge_cc_lib_objects_into_rlib"></a>merge_cc_lib_objects_into_rlib</td><td style="text-align: left">When True, objects from <code>cc_lib</code> will be copied into the <code>rlib</code> archive produced by the rust_library that depends on this <code>rust_bindgen</code> rule (using <code>BuildInfo</code> provider)</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains).</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_bindgen_toolchain"></a></p>
-<h2 id="rust_bindgen_toolchain"><a class="header" href="#rust_bindgen_toolchain">rust_bindgen_toolchain</a></h2>
-<pre>
-rust_bindgen_toolchain(<a href="rust_bindgen.html#rust_bindgen_toolchain-name">name</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-bindgen">bindgen</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-clang">clang</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-default_rustfmt">default_rustfmt</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-libclang">libclang</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-libstdcxx">libstdcxx</a>)
-</pre>
-<p>The tools required for the <code>rust_bindgen</code> rule.</p>
-<p>This rule depends on the <a href="https://crates.io/crates/bindgen"><code>bindgen</code></a> binary crate, and it
-in turn depends on both a clang binary and the clang library. To obtain these dependencies,
-<code>rust_bindgen_dependencies</code> imports bindgen and its dependencies.</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_toolchain")
-
-rust_bindgen_toolchain(
-    name = "bindgen_toolchain_impl",
-    bindgen = "//my/rust:bindgen",
-    clang = "//my/clang:clang",
-    libclang = "//my/clang:libclang.so",
-    libstdcxx = "//my/cpp:libstdc++",
-)
-
-toolchain(
-    name = "bindgen_toolchain",
-    toolchain = "bindgen_toolchain_impl",
-    toolchain_type = "@rules_rust//bindgen:toolchain_type",
-)
-</code></pre>
-<p>This toolchain will then need to be registered in the current <code>WORKSPACE</code>.
-For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>bindgen</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-clang"></a>clang</td><td style="text-align: left">The label of a <code>clang</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-default_rustfmt"></a>default_rustfmt</td><td style="text-align: left">If set, <code>rust_bindgen</code> targets will always format generated sources with <code>rustfmt</code>.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libclang"></a>libclang</td><td style="text-align: left">A cc_library that provides bindgen's runtime dependency on libclang.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libstdcxx"></a>libstdcxx</td><td style="text-align: left">A cc_library that satisfies libclang's libstdc++ dependency. This is used to make the execution of clang hermetic. If None, system libraries will be used instead.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_bindgen_dependencies"></a></p>
-<h2 id="rust_bindgen_dependencies"><a class="header" href="#rust_bindgen_dependencies">rust_bindgen_dependencies</a></h2>
-<pre>
-rust_bindgen_dependencies()
-</pre>
-<p>Declare dependencies needed for bindgen.</p>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_bindgen_library"></a></p>
-<h2 id="rust_bindgen_library"><a class="header" href="#rust_bindgen_library">rust_bindgen_library</a></h2>
-<pre>
-rust_bindgen_library(<a href="rust_bindgen.html#rust_bindgen_library-name">name</a>, <a href="rust_bindgen.html#rust_bindgen_library-header">header</a>, <a href="rust_bindgen.html#rust_bindgen_library-cc_lib">cc_lib</a>, <a href="rust_bindgen.html#rust_bindgen_library-bindgen_flags">bindgen_flags</a>, <a href="rust_bindgen.html#rust_bindgen_library-bindgen_features">bindgen_features</a>, <a href="rust_bindgen.html#rust_bindgen_library-clang_flags">clang_flags</a>,
-                     <a href="rust_bindgen.html#rust_bindgen_library-wrap_static_fns">wrap_static_fns</a>, <a href="rust_bindgen.html#rust_bindgen_library-kwargs">kwargs</a>)
-</pre>
-<p>Generates a rust source file for <code>header</code>, and builds a rust_library.</p>
-<p>Arguments are the same as <code>rust_bindgen</code>, and <code>kwargs</code> are passed directly to rust_library.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-header"></a>header</td><td style="text-align: left">The label of the .h file to generate bindings for.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-cc_lib"></a>cc_lib</td><td style="text-align: left">The label of the cc_library that contains the .h file. This is used to find the transitive includes.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_features"></a>bindgen_features</td><td style="text-align: left">The <code>features</code> attribute for the <code>rust_bindgen</code> target.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains",</td><td style="text-align: left"><code>False</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-kwargs"></a>kwargs</td><td style="text-align: left">Arguments to forward to the underlying <code>rust_library</code> rule.</td><td style="text-align: left">none</td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_bindgen_register_toolchains"></a></p>
-<h2 id="rust_bindgen_register_toolchains"><a class="header" href="#rust_bindgen_register_toolchains">rust_bindgen_register_toolchains</a></h2>
-<pre>
-rust_bindgen_register_toolchains(<a href="rust_bindgen.html#rust_bindgen_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Registers the default toolchains for the <code>rules_rust</code> <a href="https://rust-lang.github.io/rust-bindgen/">bindgen</a> rules.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left">Whether or not to register toolchains.</td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-wasm-bindgen"><a class="header" href="#rust-wasm-bindgen">Rust Wasm Bindgen</a></h1>
-<ul>
-<li><a href="rust_wasm_bindgen.html#rust_wasm_bindgen_dependencies">rust_wasm_bindgen_dependencies</a></li>
-<li><a href="rust_wasm_bindgen.html#rust_wasm_bindgen_register_toolchains">rust_wasm_bindgen_register_toolchains</a></li>
-<li><a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a></li>
-<li><a href="rust_wasm_bindgen.html#rust_wasm_bindgen">rust_wasm_bindgen</a></li>
-<li><a href="rust_wasm_bindgen.html#RustWasmBindgenInfo">RustWasmBindgenInfo</a></li>
-</ul>
-<h2 id="overview-4"><a class="header" href="#overview-4">Overview</a></h2>
-<p>Bazel rules for generating wasm modules for Javascript using <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a>.</p>
-<h2 id="setup-4"><a class="header" href="#setup-4">Setup</a></h2>
-<p>To begin using the <code>wasm-bindgen</code> rules, users can load the necessary dependencies
-in their workspace by adding the following to their <code>WORKSPACE.bazel</code> file.</p>
-<pre><code class="language-python">load("@rules_rust//wasm_bindgen:repositories.bzl", "rust_wasm_bindgen_dependencies", "rust_wasm_bindgen_register_toolchains")
-
-rust_wasm_bindgen_dependencies()
-
-rust_wasm_bindgen_register_toolchains()
-</code></pre>
-<p>This should enable users to start using the <a href="rust_wasm_bindgen.html#rust_wasm_bindgen">rust_wasm_bindgen</a>
-rule. However, it's common to want to control the version of <code>wasm-bindgen</code> in the
-workspace instead of relying on the one provided by <code>rules_rust</code>. In this case, users
-should avoid calling <code>rust_wasm_bindgen_register_toolchains</code> and instead use the
-<a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a> rule to define their own
-toolchains to register in the workspace.</p>
-<h3 id="interfacing-with-javascript-rules"><a class="header" href="#interfacing-with-javascript-rules">Interfacing with Javascript rules</a></h3>
-<p>While it's recommended for users to mantain their own , in the
-<code>@rules_rust//wasm_bindgen</code> package there exists interface sub-packages for various
-Javascript Bazel rules. E.g. <code>build_bazel_rules_nodejs</code> or <code>aspect_rules_js</code>. The
-rules defined there are a more convenient way to use <code>rust_wasm_bindgen</code> with the
-associated javascript rules due to the inclusion of additional providers. Each
-directory contains a <code>defs.bzl</code> file that defines the different variants of
-<code>rust_wasm_bindgen</code>. (e.g. <code>nodejs_rust_wasm_bindgen</code> for the <code>rules_nodejs</code> submodule).</p>
-<p><a id="rust_wasm_bindgen"></a></p>
-<h2 id="rust_wasm_bindgen"><a class="header" href="#rust_wasm_bindgen">rust_wasm_bindgen</a></h2>
-<pre>
-rust_wasm_bindgen(<a href="rust_wasm_bindgen.html#rust_wasm_bindgen-name">name</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-bindgen_flags">bindgen_flags</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-target">target</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-target_arch">target_arch</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-wasm_file">wasm_file</a>)
-</pre>
-<p>Generates javascript and typescript bindings for a webassembly module using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a>.</p>
-<p>An example of this rule in use can be seen at <a href="../examples/wasm">@rules_rust//examples/wasm</a></p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://github.com/rustwasm/wasm-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target"></a>target</td><td style="text-align: left">The type of output to generate. See https://rustwasm.github.io/wasm-bindgen/reference/deployment.html for details.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"bundler"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target_arch"></a>target_arch</td><td style="text-align: left">The target architecture to use for the wasm-bindgen command line option.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"wasm32"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-wasm_file"></a>wasm_file</td><td style="text-align: left">The <code>.wasm</code> file or crate to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_wasm_bindgen_toolchain"></a></p>
-<h2 id="rust_wasm_bindgen_toolchain"><a class="header" href="#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a></h2>
-<pre>
-rust_wasm_bindgen_toolchain(<a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain-name">name</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain-bindgen">bindgen</a>)
-</pre>
-<p>The tools required for the <code>rust_wasm_bindgen</code> rule.</p>
-<p>In cases where users want to control or change the version of <code>wasm-bindgen</code> used by <a href="rust_wasm_bindgen.html#rust_wasm_bindgen">rust_wasm_bindgen</a>,
-a unique toolchain can be created as in the example below:</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
-
-rust_bindgen_toolchain(
-    bindgen = "//3rdparty/crates:wasm_bindgen_cli__bin",
-)
-
-toolchain(
-    name = "wasm_bindgen_toolchain",
-    toolchain = "wasm_bindgen_toolchain_impl",
-    toolchain_type = "@rules_rust//wasm_bindgen:toolchain_type",
-)
-</code></pre>
-<p>Now that you have your own toolchain, you need to register it by
-inserting the following statement in your <code>WORKSPACE</code> file:</p>
-<pre><code class="language-python">register_toolchains("//my/toolchains:wasm_bindgen_toolchain")
-</code></pre>
-<p>For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>wasm-bindgen-cli</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="RustWasmBindgenInfo"></a></p>
-<h2 id="rustwasmbindgeninfo"><a class="header" href="#rustwasmbindgeninfo">RustWasmBindgenInfo</a></h2>
-<pre>
-RustWasmBindgenInfo(<a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-js">js</a>, <a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-ts">ts</a>, <a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-wasm">wasm</a>)
-</pre>
-<p>Info about wasm-bindgen outputs.</p>
-<p><strong>FIELDS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-js"></a>js</td><td style="text-align: left">Depset[File]: The Javascript files produced by <code>wasm-bindgen</code>.</td></tr>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-ts"></a>ts</td><td style="text-align: left">Depset[File]: The Typescript files produced by <code>wasm-bindgen</code>.</td></tr>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-wasm"></a>wasm</td><td style="text-align: left">File: The <code>.wasm</code> file generated by <code>wasm-bindgen</code>.</td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_wasm_bindgen_dependencies"></a></p>
-<h2 id="rust_wasm_bindgen_dependencies"><a class="header" href="#rust_wasm_bindgen_dependencies">rust_wasm_bindgen_dependencies</a></h2>
-<pre>
-rust_wasm_bindgen_dependencies()
-</pre>
-<p>Declare dependencies needed for the <code>rules_rust</code> <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a> rules.</p>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_wasm_bindgen_register_toolchains"></a></p>
-<h2 id="rust_wasm_bindgen_register_toolchains"><a class="header" href="#rust_wasm_bindgen_register_toolchains">rust_wasm_bindgen_register_toolchains</a></h2>
-<pre>
-rust_wasm_bindgen_register_toolchains(<a href="rust_wasm_bindgen.html#rust_wasm_bindgen_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Registers the default toolchains for the <code>rules_rust</code> <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a> rules.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left">Whether or not to register toolchains.</td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
 <h1 id="cargo"><a class="header" href="#cargo">Cargo</a></h1>
 <ul>
 <li><a href="cargo.html#cargo_bootstrap_repository">cargo_bootstrap_repository</a></li>
@@ -1834,12 +1241,12 @@ cargo_bootstrap_repository(<a href="cargo.html#cargo_bootstrap_repository-name">
 <li><a href="rust_analyzer.html#rust_analyzer_aspect">rust_analyzer_aspect</a></li>
 <li><a href="rust_analyzer.html#rust_analyzer_toolchain">rust_analyzer_toolchain</a></li>
 </ul>
-<h2 id="overview-5"><a class="header" href="#overview-5">Overview</a></h2>
+<h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
 <p>For <a href="https://rust-analyzer.github.io/manual.html#non-cargo-based-projects">non-Cargo projects</a>,
 <a href="https://rust-analyzer.github.io/">rust-analyzer</a> depends on a <code>rust-project.json</code> file at the
 root of the project that describes its structure. The <code>rust_analyzer</code> rule facilitates generating
 such a file.</p>
-<h3 id="setup-5"><a class="header" href="#setup-5">Setup</a></h3>
+<h3 id="setup-3"><a class="header" href="#setup-3">Setup</a></h3>
 <p>First, ensure <code>rules_rust</code> is setup in your workspace. By default, <code>rust_register_toolchains</code> will
 ensure a <a href="rust_analyzer.html#rust_analyzer_toolchain">rust_analyzer_toolchain</a> is registered within the WORKSPACE.</p>
 <p>Next, load the dependencies for the <code>rust-project.json</code> generator tool:</p>
@@ -1937,7 +1344,6 @@ rust_analyzer_aspect(<a href="rust_analyzer.html#rust_analyzer_aspect-name">name
 <ul>
 <li><a href="flatten.html#CrateInfo">CrateInfo</a></li>
 <li><a href="flatten.html#DepInfo">DepInfo</a></li>
-<li><a href="flatten.html#RustWasmBindgenInfo">RustWasmBindgenInfo</a></li>
 <li><a href="flatten.html#StdLibInfo">StdLibInfo</a></li>
 <li><a href="flatten.html#capture_clippy_output">capture_clippy_output</a></li>
 <li><a href="flatten.html#cargo_bootstrap_repository">cargo_bootstrap_repository</a></li>
@@ -1954,28 +1360,13 @@ rust_analyzer_aspect(<a href="rust_analyzer.html#rust_analyzer_aspect-name">name
 <li><a href="flatten.html#rust_analyzer_toolchain">rust_analyzer_toolchain</a></li>
 <li><a href="flatten.html#rust_analyzer_toolchain_repository">rust_analyzer_toolchain_repository</a></li>
 <li><a href="flatten.html#rust_binary">rust_binary</a></li>
-<li><a href="flatten.html#rust_bindgen">rust_bindgen</a></li>
-<li><a href="flatten.html#rust_bindgen_dependencies">rust_bindgen_dependencies</a></li>
-<li><a href="flatten.html#rust_bindgen_library">rust_bindgen_library</a></li>
-<li><a href="flatten.html#rust_bindgen_register_toolchains">rust_bindgen_register_toolchains</a></li>
-<li><a href="flatten.html#rust_bindgen_toolchain">rust_bindgen_toolchain</a></li>
 <li><a href="flatten.html#rust_clippy">rust_clippy</a></li>
 <li><a href="flatten.html#rust_clippy_aspect">rust_clippy_aspect</a></li>
 <li><a href="flatten.html#rust_doc">rust_doc</a></li>
 <li><a href="flatten.html#rust_doc_test">rust_doc_test</a></li>
-<li><a href="flatten.html#rust_grpc_library">rust_grpc_library</a></li>
 <li><a href="flatten.html#rust_library">rust_library</a></li>
 <li><a href="flatten.html#rust_library_group">rust_library_group</a></li>
 <li><a href="flatten.html#rust_proc_macro">rust_proc_macro</a></li>
-<li><a href="flatten.html#rust_prost_dependencies">rust_prost_dependencies</a></li>
-<li><a href="flatten.html#rust_prost_library">rust_prost_library</a></li>
-<li><a href="flatten.html#rust_prost_toolchain">rust_prost_toolchain</a></li>
-<li><a href="flatten.html#rust_prost_transitive_repositories">rust_prost_transitive_repositories</a></li>
-<li><a href="flatten.html#rust_proto_library">rust_proto_library</a></li>
-<li><a href="flatten.html#rust_proto_protobuf_dependencies">rust_proto_protobuf_dependencies</a></li>
-<li><a href="flatten.html#rust_proto_protobuf_register_toolchains">rust_proto_protobuf_register_toolchains</a></li>
-<li><a href="flatten.html#rust_proto_protobuf_toolchain">rust_proto_protobuf_toolchain</a></li>
-<li><a href="flatten.html#rust_proto_protobuf_transitive_repositories">rust_proto_protobuf_transitive_repositories</a></li>
 <li><a href="flatten.html#rust_register_toolchains">rust_register_toolchains</a></li>
 <li><a href="flatten.html#rust_repositories">rust_repositories</a></li>
 <li><a href="flatten.html#rust_repository_set">rust_repository_set</a></li>
@@ -1988,10 +1379,6 @@ rust_analyzer_aspect(<a href="rust_analyzer.html#rust_analyzer_aspect-name">name
 <li><a href="flatten.html#rust_toolchain_repository">rust_toolchain_repository</a></li>
 <li><a href="flatten.html#rust_toolchain_repository_proxy">rust_toolchain_repository_proxy</a></li>
 <li><a href="flatten.html#rust_toolchain_tools_repository">rust_toolchain_tools_repository</a></li>
-<li><a href="flatten.html#rust_wasm_bindgen">rust_wasm_bindgen</a></li>
-<li><a href="flatten.html#rust_wasm_bindgen_dependencies">rust_wasm_bindgen_dependencies</a></li>
-<li><a href="flatten.html#rust_wasm_bindgen_register_toolchains">rust_wasm_bindgen_register_toolchains</a></li>
-<li><a href="flatten.html#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a></li>
 <li><a href="flatten.html#rustfmt_aspect">rustfmt_aspect</a></li>
 <li><a href="flatten.html#rustfmt_test">rustfmt_test</a></li>
 <li><a href="flatten.html#rustfmt_toolchain">rustfmt_toolchain</a></li>
@@ -2188,61 +1575,6 @@ is available under the key <code>dsym_folder</code> in <code>OutputGroupInfo</co
 <tr><td style="text-align: left"><a id="rust_binary-version"></a>version</td><td style="text-align: left">A version to inject in the cargo environment variable.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"0.0.0"</code></td></tr>
 </tbody></table>
 </div>
-<p><a id="rust_bindgen"></a></p>
-<h2 id="rust_bindgen-1"><a class="header" href="#rust_bindgen-1">rust_bindgen</a></h2>
-<pre>
-rust_bindgen(<a href="flatten.html#rust_bindgen-name">name</a>, <a href="flatten.html#rust_bindgen-bindgen_flags">bindgen_flags</a>, <a href="flatten.html#rust_bindgen-cc_lib">cc_lib</a>, <a href="flatten.html#rust_bindgen-clang_flags">clang_flags</a>, <a href="flatten.html#rust_bindgen-header">header</a>, <a href="flatten.html#rust_bindgen-merge_cc_lib_objects_into_rlib">merge_cc_lib_objects_into_rlib</a>,
-             <a href="flatten.html#rust_bindgen-wrap_static_fns">wrap_static_fns</a>)
-</pre>
-<p>Generates a rust source file from a cc_library and a header.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-cc_lib"></a>cc_lib</td><td style="text-align: left">The cc_library that contains the <code>.h</code> file. This is used to find the transitive includes.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-header"></a>header</td><td style="text-align: left">The <code>.h</code> file to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-merge_cc_lib_objects_into_rlib"></a>merge_cc_lib_objects_into_rlib</td><td style="text-align: left">When True, objects from <code>cc_lib</code> will be copied into the <code>rlib</code> archive produced by the rust_library that depends on this <code>rust_bindgen</code> rule (using <code>BuildInfo</code> provider)</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains).</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_bindgen_toolchain"></a></p>
-<h2 id="rust_bindgen_toolchain-1"><a class="header" href="#rust_bindgen_toolchain-1">rust_bindgen_toolchain</a></h2>
-<pre>
-rust_bindgen_toolchain(<a href="flatten.html#rust_bindgen_toolchain-name">name</a>, <a href="flatten.html#rust_bindgen_toolchain-bindgen">bindgen</a>, <a href="flatten.html#rust_bindgen_toolchain-clang">clang</a>, <a href="flatten.html#rust_bindgen_toolchain-default_rustfmt">default_rustfmt</a>, <a href="flatten.html#rust_bindgen_toolchain-libclang">libclang</a>, <a href="flatten.html#rust_bindgen_toolchain-libstdcxx">libstdcxx</a>)
-</pre>
-<p>The tools required for the <code>rust_bindgen</code> rule.</p>
-<p>This rule depends on the <a href="https://crates.io/crates/bindgen"><code>bindgen</code></a> binary crate, and it
-in turn depends on both a clang binary and the clang library. To obtain these dependencies,
-<code>rust_bindgen_dependencies</code> imports bindgen and its dependencies.</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:defs.bzl", "rust_bindgen_toolchain")
-
-rust_bindgen_toolchain(
-    name = "bindgen_toolchain_impl",
-    bindgen = "//my/rust:bindgen",
-    clang = "//my/clang:clang",
-    libclang = "//my/clang:libclang.so",
-    libstdcxx = "//my/cpp:libstdc++",
-)
-
-toolchain(
-    name = "bindgen_toolchain",
-    toolchain = "bindgen_toolchain_impl",
-    toolchain_type = "@rules_rust//bindgen:toolchain_type",
-)
-</code></pre>
-<p>This toolchain will then need to be registered in the current <code>WORKSPACE</code>.
-For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>bindgen</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-clang"></a>clang</td><td style="text-align: left">The label of a <code>clang</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-default_rustfmt"></a>default_rustfmt</td><td style="text-align: left">If set, <code>rust_bindgen</code> targets will always format generated sources with <code>rustfmt</code>.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libclang"></a>libclang</td><td style="text-align: left">A cc_library that provides bindgen's runtime dependency on libclang.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libstdcxx"></a>libstdcxx</td><td style="text-align: left">A cc_library that satisfies libclang's libstdc++ dependency. This is used to make the execution of clang hermetic. If None, system libraries will be used instead.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
 <p><a id="rust_clippy"></a></p>
 <h2 id="rust_clippy-1"><a class="header" href="#rust_clippy-1">rust_clippy</a></h2>
 <pre>
@@ -2363,40 +1695,6 @@ rust_doc_test(
 <tr><td style="text-align: left"><a id="rust_doc_test-deps"></a>deps</td><td style="text-align: left">List of other libraries to be linked to this library target.<br><br>These can be either other <code>rust_library</code> targets or <code>cc_library</code> targets if linking a native library.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_doc_test-crate"></a>crate</td><td style="text-align: left">The label of the target to generate code documentation for. <code>rust_doc_test</code> can generate HTML code documentation for the source files of <code>rust_library</code> or <code>rust_binary</code> targets.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
 <tr><td style="text-align: left"><a id="rust_doc_test-proc_macro_deps"></a>proc_macro_deps</td><td style="text-align: left">List of <code>rust_proc_macro</code> targets used to help build this library target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_grpc_library"></a></p>
-<h2 id="rust_grpc_library-1"><a class="header" href="#rust_grpc_library-1">rust_grpc_library</a></h2>
-<pre>
-rust_grpc_library(<a href="flatten.html#rust_grpc_library-name">name</a>, <a href="flatten.html#rust_grpc_library-deps">deps</a>, <a href="flatten.html#rust_grpc_library-crate_name">crate_name</a>, <a href="flatten.html#rust_grpc_library-rust_deps">rust_deps</a>, <a href="flatten.html#rust_grpc_library-rustc_flags">rustc_flags</a>)
-</pre>
-<p>Builds a Rust library crate from a set of <code>proto_library</code>s suitable for gRPC.</p>
-<p>Example:</p>
-<pre><code class="language-python">load("@rules_rust//proto/protobuf:defs.bzl", "rust_grpc_library")
-
-proto_library(
-    name = "my_proto",
-    srcs = ["my.proto"]
-)
-
-rust_grpc_library(
-    name = "rust",
-    deps = [":my_proto"],
-)
-
-rust_binary(
-    name = "my_service",
-    srcs = ["my_service.rs"],
-    deps = [":rust"],
-)
-</code></pre>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_grpc_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding gRPC stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_grpc_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="rust_library"></a></p>
@@ -2545,64 +1843,6 @@ rust_proc_macro(<a href="flatten.html#rust_proc_macro-name">name</a>, <a href="f
 <tr><td style="text-align: left"><a id="rust_proc_macro-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_proc_macro-stamp"></a>stamp</td><td style="text-align: left">Whether to encode build information into the <code>Rustc</code> action. Possible values:<br><br>- <code>stamp = 1</code>: Always stamp the build information into the <code>Rustc</code> action, even in             <a href="https://docs.bazel.build/versions/main/user-manual.html#flag--stamp">--nostamp</a> builds.             This setting should be avoided, since it potentially kills remote caching for the target and             any downstream actions that depend on it.<br><br>- <code>stamp = 0</code>: Always replace build information by constant values. This gives good build result caching.<br><br>- <code>stamp = -1</code>: Embedding of build information is controlled by the             <a href="https://docs.bazel.build/versions/main/user-manual.html#flag--stamp">--[no]stamp</a> flag.<br><br>Stamped targets are not rebuilt unless their dependencies change.<br><br>For example if a <code>rust_library</code> is stamped, and a <code>rust_binary</code> depends on that library, the stamped library won't be rebuilt when we change sources of the <code>rust_binary</code>. This is different from how <a href="https://docs.bazel.build/versions/main/be/c-cpp.html#cc_library.linkstamp"><code>cc_library.linkstamps</code></a> behaves.</td><td style="text-align: left">Integer</td><td style="text-align: left">optional</td><td style="text-align: left"><code>0</code></td></tr>
 <tr><td style="text-align: left"><a id="rust_proc_macro-version"></a>version</td><td style="text-align: left">A version to inject in the cargo environment variable.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"0.0.0"</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_toolchain"></a></p>
-<h2 id="rust_prost_toolchain-1"><a class="header" href="#rust_prost_toolchain-1">rust_prost_toolchain</a></h2>
-<pre>
-rust_prost_toolchain(<a href="flatten.html#rust_prost_toolchain-name">name</a>, <a href="flatten.html#rust_prost_toolchain-include_transitive_deps">include_transitive_deps</a>, <a href="flatten.html#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="flatten.html#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="flatten.html#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>,
-                     <a href="flatten.html#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="flatten.html#rust_prost_toolchain-prost_types">prost_types</a>, <a href="flatten.html#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="flatten.html#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="flatten.html#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>,
-                     <a href="flatten.html#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="flatten.html#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
-</pre>
-<p>Rust Prost toolchain rule.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-include_transitive_deps"></a>include_transitive_deps</td><td style="text-align: left">Whether to include transitive dependencies. If set to True, all transitive dependencies will directly accessible by the dependent crate.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_opts"></a>prost_opts</td><td style="text-align: left">Additional options to add to Prost.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin"></a>prost_plugin</td><td style="text-align: left">Additional plugins to add to Prost.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin_flag"></a>prost_plugin_flag</td><td style="text-align: left">Prost plugin flag format. (e.g. <code>--plugin=protoc-gen-prost=%s</code>)</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-prost=%s"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_runtime"></a>prost_runtime</td><td style="text-align: left">The Prost runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_types"></a>prost_types</td><td style="text-align: left">The Prost types crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-proto_compiler"></a>proto_compiler</td><td style="text-align: left">The protoc compiler to use. Note that this attribute is deprecated - prefer to use --incompatible_enable_proto_toolchain_resolution.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_opts"></a>tonic_opts</td><td style="text-align: left">Additional options to add to Tonic.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin"></a>tonic_plugin</td><td style="text-align: left">Additional plugins to add to Tonic.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin_flag"></a>tonic_plugin_flag</td><td style="text-align: left">Tonic plugin flag format. (e.g. <code>--plugin=protoc-gen-tonic=%s</code>))</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-tonic=%s"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_runtime"></a>tonic_runtime</td><td style="text-align: left">The Tonic runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_proto_library"></a></p>
-<h2 id="rust_proto_library-1"><a class="header" href="#rust_proto_library-1">rust_proto_library</a></h2>
-<pre>
-rust_proto_library(<a href="flatten.html#rust_proto_library-name">name</a>, <a href="flatten.html#rust_proto_library-deps">deps</a>, <a href="flatten.html#rust_proto_library-crate_name">crate_name</a>, <a href="flatten.html#rust_proto_library-rust_deps">rust_deps</a>, <a href="flatten.html#rust_proto_library-rustc_flags">rustc_flags</a>)
-</pre>
-<p>Builds a Rust library crate from a set of <code>proto_library</code>s.</p>
-<p>Example:</p>
-<pre><code class="language-python">load("@rules_rust//proto/protobuf:defs.bzl", "rust_proto_library")
-
-proto_library(
-    name = "my_proto",
-    srcs = ["my.proto"]
-)
-
-rust_proto_library(
-    name = "rust",
-    deps = [":my_proto"],
-)
-
-rust_binary(
-    name = "my_proto_binary",
-    srcs = ["my_proto_binary.rs"],
-    deps = [":rust"],
-)
-</code></pre>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_proto_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="rust_shared_library"></a></p>
@@ -2905,53 +2145,6 @@ toolchain(
 <tr><td style="text-align: left"><a id="rust_toolchain-target_triple"></a>target_triple</td><td style="text-align: left">The platform triple for the toolchains target environment. For more details see: https://docs.bazel.build/versions/master/skylark/rules.html#configurations</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
 </tbody></table>
 </div>
-<p><a id="rust_wasm_bindgen"></a></p>
-<h2 id="rust_wasm_bindgen-1"><a class="header" href="#rust_wasm_bindgen-1">rust_wasm_bindgen</a></h2>
-<pre>
-rust_wasm_bindgen(<a href="flatten.html#rust_wasm_bindgen-name">name</a>, <a href="flatten.html#rust_wasm_bindgen-bindgen_flags">bindgen_flags</a>, <a href="flatten.html#rust_wasm_bindgen-target">target</a>, <a href="flatten.html#rust_wasm_bindgen-target_arch">target_arch</a>, <a href="flatten.html#rust_wasm_bindgen-wasm_file">wasm_file</a>)
-</pre>
-<p>Generates javascript and typescript bindings for a webassembly module using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a>.</p>
-<p>An example of this rule in use can be seen at <a href="../examples/wasm">@rules_rust//examples/wasm</a></p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://github.com/rustwasm/wasm-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target"></a>target</td><td style="text-align: left">The type of output to generate. See https://rustwasm.github.io/wasm-bindgen/reference/deployment.html for details.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"bundler"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target_arch"></a>target_arch</td><td style="text-align: left">The target architecture to use for the wasm-bindgen command line option.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"wasm32"</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen-wasm_file"></a>wasm_file</td><td style="text-align: left">The <code>.wasm</code> file or crate to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_wasm_bindgen_toolchain"></a></p>
-<h2 id="rust_wasm_bindgen_toolchain-1"><a class="header" href="#rust_wasm_bindgen_toolchain-1">rust_wasm_bindgen_toolchain</a></h2>
-<pre>
-rust_wasm_bindgen_toolchain(<a href="flatten.html#rust_wasm_bindgen_toolchain-name">name</a>, <a href="flatten.html#rust_wasm_bindgen_toolchain-bindgen">bindgen</a>)
-</pre>
-<p>The tools required for the <code>rust_wasm_bindgen</code> rule.</p>
-<p>In cases where users want to control or change the version of <code>wasm-bindgen</code> used by <a href="flatten.html#rust_wasm_bindgen">rust_wasm_bindgen</a>,
-a unique toolchain can be created as in the example below:</p>
-<pre><code class="language-python">load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
-
-rust_bindgen_toolchain(
-    bindgen = "//3rdparty/crates:wasm_bindgen_cli__bin",
-)
-
-toolchain(
-    name = "wasm_bindgen_toolchain",
-    toolchain = "wasm_bindgen_toolchain_impl",
-    toolchain_type = "@rules_rust//wasm_bindgen:toolchain_type",
-)
-</code></pre>
-<p>Now that you have your own toolchain, you need to register it by
-inserting the following statement in your <code>WORKSPACE</code> file:</p>
-<pre><code class="language-python">register_toolchains("//my/toolchains:wasm_bindgen_toolchain")
-</code></pre>
-<p>For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>wasm-bindgen-cli</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-</tbody></table>
-</div>
 <p><a id="rustfmt_test"></a></p>
 <h2 id="rustfmt_test-1"><a class="header" href="#rustfmt_test-1">rustfmt_test</a></h2>
 <pre>
@@ -3031,19 +2224,6 @@ DepInfo(<a href="flatten.html#DepInfo-dep_env">dep_env</a>, <a href="flatten.htm
 <tr><td style="text-align: left"><a id="DepInfo-transitive_metadata_outputs"></a>transitive_metadata_outputs</td><td style="text-align: left">depset[File]: All transitive metadata dependencies (.rmeta, for crates that provide them) and all transitive object dependencies (.rlib) for crates that don't provide metadata.</td></tr>
 <tr><td style="text-align: left"><a id="DepInfo-transitive_noncrates"></a>transitive_noncrates</td><td style="text-align: left">depset[LinkerInput]: All transitive dependencies that aren't crates.</td></tr>
 <tr><td style="text-align: left"><a id="DepInfo-transitive_proc_macro_data"></a>transitive_proc_macro_data</td><td style="text-align: left">depset[File]: Data of all transitive proc-macro dependencies, and non-macro dependencies of those macros.</td></tr>
-</tbody></table>
-</div>
-<p><a id="RustWasmBindgenInfo"></a></p>
-<h2 id="rustwasmbindgeninfo-1"><a class="header" href="#rustwasmbindgeninfo-1">RustWasmBindgenInfo</a></h2>
-<pre>
-RustWasmBindgenInfo(<a href="flatten.html#RustWasmBindgenInfo-js">js</a>, <a href="flatten.html#RustWasmBindgenInfo-ts">ts</a>, <a href="flatten.html#RustWasmBindgenInfo-wasm">wasm</a>)
-</pre>
-<p>Info about wasm-bindgen outputs.</p>
-<p><strong>FIELDS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-js"></a>js</td><td style="text-align: left">Depset[File]: The Javascript files produced by <code>wasm-bindgen</code>.</td></tr>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-ts"></a>ts</td><td style="text-align: left">Depset[File]: The Typescript files produced by <code>wasm-bindgen</code>.</td></tr>
-<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-wasm"></a>wasm</td><td style="text-align: left">File: The <code>.wasm</code> file generated by <code>wasm-bindgen</code>.</td></tr>
 </tbody></table>
 </div>
 <p><a id="StdLibInfo"></a></p>
@@ -3217,110 +2397,6 @@ rust_analyzer_toolchain_repository(<a href="flatten.html#rust_analyzer_toolchain
 </div>
 <p><strong>RETURNS</strong></p>
 <p>str: The name of a registerable rust_analyzer_toolchain.</p>
-<p><a id="rust_bindgen_dependencies"></a></p>
-<h2 id="rust_bindgen_dependencies-1"><a class="header" href="#rust_bindgen_dependencies-1">rust_bindgen_dependencies</a></h2>
-<pre>
-rust_bindgen_dependencies()
-</pre>
-<p>Declare dependencies needed for bindgen.</p>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_bindgen_library"></a></p>
-<h2 id="rust_bindgen_library-1"><a class="header" href="#rust_bindgen_library-1">rust_bindgen_library</a></h2>
-<pre>
-rust_bindgen_library(<a href="flatten.html#rust_bindgen_library-name">name</a>, <a href="flatten.html#rust_bindgen_library-header">header</a>, <a href="flatten.html#rust_bindgen_library-cc_lib">cc_lib</a>, <a href="flatten.html#rust_bindgen_library-bindgen_flags">bindgen_flags</a>, <a href="flatten.html#rust_bindgen_library-bindgen_features">bindgen_features</a>, <a href="flatten.html#rust_bindgen_library-clang_flags">clang_flags</a>,
-                     <a href="flatten.html#rust_bindgen_library-wrap_static_fns">wrap_static_fns</a>, <a href="flatten.html#rust_bindgen_library-kwargs">kwargs</a>)
-</pre>
-<p>Generates a rust source file for <code>header</code>, and builds a rust_library.</p>
-<p>Arguments are the same as <code>rust_bindgen</code>, and <code>kwargs</code> are passed directly to rust_library.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-header"></a>header</td><td style="text-align: left">The label of the .h file to generate bindings for.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-cc_lib"></a>cc_lib</td><td style="text-align: left">The label of the cc_library that contains the .h file. This is used to find the transitive includes.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_features"></a>bindgen_features</td><td style="text-align: left">The <code>features</code> attribute for the <code>rust_bindgen</code> target.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains",</td><td style="text-align: left"><code>False</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_bindgen_library-kwargs"></a>kwargs</td><td style="text-align: left">Arguments to forward to the underlying <code>rust_library</code> rule.</td><td style="text-align: left">none</td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_bindgen_register_toolchains"></a></p>
-<h2 id="rust_bindgen_register_toolchains-1"><a class="header" href="#rust_bindgen_register_toolchains-1">rust_bindgen_register_toolchains</a></h2>
-<pre>
-rust_bindgen_register_toolchains(<a href="flatten.html#rust_bindgen_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Registers the default toolchains for the <code>rules_rust</code> <a href="https://rust-lang.github.io/rust-bindgen/">bindgen</a> rules.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_bindgen_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left">Whether or not to register toolchains.</td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_dependencies"></a></p>
-<h2 id="rust_prost_dependencies-1"><a class="header" href="#rust_prost_dependencies-1">rust_prost_dependencies</a></h2>
-<pre>
-rust_prost_dependencies(<a href="flatten.html#rust_prost_dependencies-bzlmod">bzlmod</a>)
-</pre>
-<p>Declares repositories needed for prost.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_dependencies-bzlmod"></a>bzlmod</td><td style="text-align: left">Whether bzlmod is enabled.</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_prost_library"></a></p>
-<h2 id="rust_prost_library-1"><a class="header" href="#rust_prost_library-1">rust_prost_library</a></h2>
-<pre>
-rust_prost_library(<a href="flatten.html#rust_prost_library-name">name</a>, <a href="flatten.html#rust_prost_library-kwargs">kwargs</a>)
-</pre>
-<p>A rule for generating a Rust library using Prost.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_library-name"></a>name</td><td style="text-align: left">The name of the target.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_library-kwargs"></a>kwargs</td><td style="text-align: left">Additional keyword arguments for the underlying <code>rust_prost_library</code> rule.</td><td style="text-align: left">none</td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_prost_transitive_repositories"></a></p>
-<h2 id="rust_prost_transitive_repositories-1"><a class="header" href="#rust_prost_transitive_repositories-1">rust_prost_transitive_repositories</a></h2>
-<pre>
-rust_prost_transitive_repositories()
-</pre>
-<p>Load transitive dependencies of the <code>@rules_rust//proto/protobuf</code> rules.</p>
-<p>This macro should be called immediately after the <code>rust_protobuf_dependencies</code> macro.</p>
-<p><a id="rust_proto_protobuf_dependencies"></a></p>
-<h2 id="rust_proto_protobuf_dependencies-1"><a class="header" href="#rust_proto_protobuf_dependencies-1">rust_proto_protobuf_dependencies</a></h2>
-<pre>
-rust_proto_protobuf_dependencies(<a href="flatten.html#rust_proto_protobuf_dependencies-bzlmod">bzlmod</a>)
-</pre>
-<p>Sets up dependencies for rules_rust's proto support.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_protobuf_dependencies-bzlmod"></a>bzlmod</td><td style="text-align: left">Whether this function is being called from a bzlmod context rather than a workspace context.</td><td style="text-align: left"><code>False</code></td></tr>
-</tbody></table>
-</div>
-<p><strong>RETURNS</strong></p>
-<p>A list of structs containing information about root module deps to report to bzlmod's extension_metadata.</p>
-<p><a id="rust_proto_protobuf_register_toolchains"></a></p>
-<h2 id="rust_proto_protobuf_register_toolchains-1"><a class="header" href="#rust_proto_protobuf_register_toolchains-1">rust_proto_protobuf_register_toolchains</a></h2>
-<pre>
-rust_proto_protobuf_register_toolchains(<a href="flatten.html#rust_proto_protobuf_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Register toolchains for proto compilation.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_proto_protobuf_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left"><p align="center"> - </p></td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div>
-<p><a id="rust_proto_protobuf_transitive_repositories"></a></p>
-<h2 id="rust_proto_protobuf_transitive_repositories-1"><a class="header" href="#rust_proto_protobuf_transitive_repositories-1">rust_proto_protobuf_transitive_repositories</a></h2>
-<pre>
-rust_proto_protobuf_transitive_repositories()
-</pre>
-<p>Load transitive dependencies of the <code>@rules_rust//proto/protobuf</code> rules.</p>
-<p>This macro should be called immediately after the <code>rust_protobuf_dependencies</code> macro.</p>
 <p><a id="rust_register_toolchains"></a></p>
 <h2 id="rust_register_toolchains"><a class="header" href="#rust_register_toolchains">rust_register_toolchains</a></h2>
 <pre>
@@ -3493,26 +2569,6 @@ rust_toolchain_repository(<a href="flatten.html#rust_toolchain_repository-name">
 </div>
 <p><strong>RETURNS</strong></p>
 <p>str: The name of the registerable toolchain created by this rule.</p>
-<p><a id="rust_wasm_bindgen_dependencies"></a></p>
-<h2 id="rust_wasm_bindgen_dependencies-1"><a class="header" href="#rust_wasm_bindgen_dependencies-1">rust_wasm_bindgen_dependencies</a></h2>
-<pre>
-rust_wasm_bindgen_dependencies()
-</pre>
-<p>Declare dependencies needed for the <code>rules_rust</code> <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a> rules.</p>
-<p><strong>RETURNS</strong></p>
-<p>list[struct(repo=str, is_dev_dep=bool)]: A list of the repositories
-defined by this macro.</p>
-<p><a id="rust_wasm_bindgen_register_toolchains"></a></p>
-<h2 id="rust_wasm_bindgen_register_toolchains-1"><a class="header" href="#rust_wasm_bindgen_register_toolchains-1">rust_wasm_bindgen_register_toolchains</a></h2>
-<pre>
-rust_wasm_bindgen_register_toolchains(<a href="flatten.html#rust_wasm_bindgen_register_toolchains-register_toolchains">register_toolchains</a>)
-</pre>
-<p>Registers the default toolchains for the <code>rules_rust</code> <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a> rules.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_wasm_bindgen_register_toolchains-register_toolchains"></a>register_toolchains</td><td style="text-align: left">Whether or not to register toolchains.</td><td style="text-align: left"><code>True</code></td></tr>
-</tbody></table>
-</div>
 <p><a id="rust_analyzer_aspect"></a></p>
 <h2 id="rust_analyzer_aspect-1"><a class="header" href="#rust_analyzer_aspect-1">rust_analyzer_aspect</a></h2>
 <pre>
@@ -3684,7 +2740,7 @@ rust_toolchain_tools_repository(<a href="flatten.html#rust_toolchain_tools_repos
 </ul>
 </li>
 </ol>
-<h2 id="setup-6"><a class="header" href="#setup-6">Setup</a></h2>
+<h2 id="setup-4"><a class="header" href="#setup-4">Setup</a></h2>
 <p>To use rules_rust in a project using bzlmod, add the following to your MODULE.bazel file:</p>
 <pre><code class="language-starlark">bazel_dep(name = "rules_rust", version = "0.49.3")
 </code></pre>
@@ -3955,7 +3011,7 @@ crate.spec(<a href="crate_universe_bzlmod.html#crate.spec-artifact">artifact</a>
 <tr><td style="text-align: left"><a id="crate.from_cargo-generate_build_scripts"></a>generate_build_scripts</td><td style="text-align: left">Whether or not to generate <a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html">cargo build scripts</a> by default.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_cargo-manifests"></a>manifests</td><td style="text-align: left">A list of Cargo manifests (<code>Cargo.toml</code> files).</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_cargo-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="crate.from_cargo-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_cargo-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="crate.annotation"></a></p>
@@ -4012,7 +3068,7 @@ crate.spec(<a href="crate_universe_bzlmod.html#crate.spec-artifact">artifact</a>
 <tr><td style="text-align: left"><a id="crate.from_specs-generate_binaries"></a>generate_binaries</td><td style="text-align: left">Whether to generate <code>rust_binary</code> targets for all the binary crates in every package. By default only the <code>rust_library</code> targets are generated.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_specs-generate_build_scripts"></a>generate_build_scripts</td><td style="text-align: left">Whether or not to generate <a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html">cargo build scripts</a> by default.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
 <tr><td style="text-align: left"><a id="crate.from_specs-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="crate.from_specs-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crate.from_specs-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 </tbody></table>
 </div>
 <p><a id="crate.spec"></a></p>
@@ -4035,7 +3091,7 @@ crate.spec(<a href="crate_universe_bzlmod.html#crate.spec-artifact">artifact</a>
 <p>Crate Universe is a set of Bazel rule for generating Rust targets using Cargo.</p>
 <p>This doc describes using crate_universe from a WORKSPACE file.</p>
 <p>If you're using bzlmod, please see <a href="crate_universe_bzlmod.html">the bzlmod equivalent of this doc</a>.</p>
-<h2 id="setup-7"><a class="header" href="#setup-7">Setup</a></h2>
+<h2 id="setup-5"><a class="header" href="#setup-5">Setup</a></h2>
 <p>After loading <code>rules_rust</code> in your workspace, set the following to begin using <code>crate_universe</code>:</p>
 <pre><code class="language-python">load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 
@@ -4337,7 +3393,7 @@ call against the generated workspace. The following table describes how to contr
 <tr><td style="text-align: left"><a id="crates_vendor-annotations"></a>annotations</td><td style="text-align: left">Extra settings to apply to crates. See <a href="crate_universe.html#crateannotation">crate.annotation</a>.</td><td style="text-align: left"><a href="https://bazel.build/rules/lib/dict">Dictionary: String -&gt; List of strings</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>{}</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-bazel"></a>bazel</td><td style="text-align: left">The path to a bazel binary used to locate the output_base for the current workspace.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-buildifier"></a>buildifier</td><td style="text-align: left">The path to a <a href="https://github.com/bazelbuild/buildtools/blob/5.0.1/buildifier/README.md">buildifier</a> binary used to format generated BUILD files.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>"@rules_rust//crate_universe/private/vendor:buildifier"</code></td></tr>
-<tr><td style="text-align: left"><a id="crates_vendor-cargo_bazel"></a>cargo_bazel</td><td style="text-align: left">The cargo-bazel binary to use for vendoring. If this attribute is not set, then a <code>CARGO_BAZEL_GENERATOR_PATH</code> action env will be used.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>"@@cargo_bazel_bootstrap//:binary"</code></td></tr>
+<tr><td style="text-align: left"><a id="crates_vendor-cargo_bazel"></a>cargo_bazel</td><td style="text-align: left">The cargo-bazel binary to use for vendoring. If this attribute is not set, then a <code>CARGO_BAZEL_GENERATOR_PATH</code> action env will be used.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>"@@rules_rust~~cargo_bazel_bootstrap~cargo_bazel_bootstrap//:binary"</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-cargo_config"></a>cargo_config</td><td style="text-align: left">A <a href="https://doc.rust-lang.org/cargo/reference/config.html">Cargo configuration</a> file.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-cargo_lockfile"></a>cargo_lockfile</td><td style="text-align: left">The path to an existing <code>Cargo.lock</code> file</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-generate_binaries"></a>generate_binaries</td><td style="text-align: left">Whether to generate <code>rust_binary</code> targets for all the binary crates in every package. By default only the <code>rust_library</code> targets are generated.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
@@ -4349,7 +3405,7 @@ call against the generated workspace. The following table describes how to contr
 <tr><td style="text-align: left"><a id="crates_vendor-render_config"></a>render_config</td><td style="text-align: left">The configuration flags to use for rendering. Use <code>//crate_universe:defs.bzl\%render_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-repository_name"></a>repository_name</td><td style="text-align: left">The name of the repository to generate for <code>remote</code> vendor modes. If unset, the label name will be used</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="crates_vendor-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crates_vendor-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_vendor-vendor_path"></a>vendor_path</td><td style="text-align: left">The path to a directory to write files into. Absolute paths will be treated as relative to the workspace root</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"crates"</code></td></tr>
 </tbody></table>
 </div>
@@ -4691,7 +3747,7 @@ allowlist:</p>
 <tr><td style="text-align: left"><a id="crates_repository-rust_toolchain_rustc_template"></a>rust_toolchain_rustc_template</td><td style="text-align: left">The template to use for finding the host <code>rustc</code> binary. <code>{version}</code> (eg. '1.53.0'), <code>{triple}</code> (eg. 'x86_64-unknown-linux-gnu'), <code>{arch}</code> (eg. 'aarch64'), <code>{vendor}</code> (eg. 'unknown'), <code>{system}</code> (eg. 'darwin'), <code>{cfg}</code> (eg. 'exec'), <code>{channel}</code> (eg. 'stable'), and <code>{tool}</code> (eg. 'cargo.exe') will be replaced in the string if present.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"@rust_{system}_{arch}__{triple}__{channel}_tools//:bin/{tool}"</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_repository-rust_version"></a>rust_version</td><td style="text-align: left">The version of Rust the currently registered toolchain is using. Eg. <code>1.56.0</code>, or <code>nightly/2021-09-08</code></td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"1.82.0"</code></td></tr>
 <tr><td style="text-align: left"><a id="crates_repository-splicing_config"></a>splicing_config</td><td style="text-align: left">The configuration flags to use for splicing Cargo maniests. Use <code>//crate_universe:defs.bzl\%rsplicing_config</code> to generate the value for this field. If unset, the defaults defined there will be used.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
-<tr><td style="text-align: left"><a id="crates_repository-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasi", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
+<tr><td style="text-align: left"><a id="crates_repository-supported_platform_triples"></a>supported_platform_triples</td><td style="text-align: left">A set of all platform triples to consider when generating dependencies.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-fuchsia", "aarch64-unknown-linux-gnu", "aarch64-unknown-nixos-gnu", "aarch64-unknown-nto-qnx710", "arm-unknown-linux-gnueabi", "armv7-linux-androideabi", "armv7-unknown-linux-gnueabi", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "powerpc-unknown-linux-gnu", "riscv32imc-unknown-none-elf", "riscv64gc-unknown-none-elf", "s390x-unknown-linux-gnu", "thumbv7em-none-eabi", "thumbv8m.main-none-eabi", "wasm32-unknown-unknown", "wasm32-wasip1", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-fuchsia", "x86_64-unknown-linux-gnu", "x86_64-unknown-nixos-gnu", "x86_64-unknown-none"]</code></td></tr>
 </tbody></table>
 </div>
 <p><strong>ENVIRONMENT VARIABLES</strong></p>
@@ -4714,7 +3770,518 @@ allowlist:</p>
 @rules_rust//tools/upstream_wrapper:rustfmt
 </code></pre>
 <p>You can run them via <code>bazel run</code>, e.g. <code>bazel run @rules_rust//tools/upstream_wrapper:cargo -- check</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extensions"><a class="header" href="#extensions">Extensions</a></h1>
+<p>Bazel rules for interfacing with other rules and integrations with popular 3rd party tools.</p>
+<h2 id="setup-6"><a class="header" href="#setup-6">Setup</a></h2>
+<p>The extension rules are released with each release of <code>rules_rust</code> (core) which can be found on <a href="https://github.com/bazelbuild/rules_rust/releases">the GitHub Releases page</a>. We recommend using the latest release from that page.</p>
+<h3 id="bzlmod-1"><a class="header" href="#bzlmod-1">Bzlmod</a></h3>
+<p>Note that rules_rust bzlmod support is still a work in progress. Most features should work, but bugs are more likely. This is not a desired end-state - please report (or better yet, help fix!) bugs you run into.</p>
+<p>To use <code>rules_rust</code> extensions in a project using bzlmod, add the following to your <code>MODULE.bazel</code> file:</p>
+<pre><code class="language-python">bazel_dep(name = "rules_rust_{EXTENSION}", version = "{VERSION}")
+</code></pre>
+<p>Don't forget to substitute in your desired release's version number and <code>{EXTENSION}</code> with the
+name of the desired extension. E.g.:</p>
+<pre><code class="language-python">bazel_dep(name = "rules_rust_bindgen", version = "0.55.0")
+</code></pre>
+<h3 id="workspace-1"><a class="header" href="#workspace-1">WORKSPACE</a></h3>
+<p>To use <code>rules_rust</code> extensions in a project using a WORKSPACE file, add the following to your <code>WORKSPACE</code> file to add the external repositories for the Rust toolchain:</p>
+<pre><code class="language-python">load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# To find additional information on this release or newer ones visit:
+# https://github.com/bazelbuild/rules_rust/releases
+http_archive(
+    name = "rules_rust_{EXTENSION}",
+    # See releases page
+)
+
+# Refer to the documentation of the desired rules for how to load other necessary dependencies.
+</code></pre>
+<p>Don't forget to substitute in your desired release's version number, integrity hash, and <code>{EXTENSION}</code> with the name of the desired extension.</p>
+<div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
+<h1 id="rules_rust_bindgen"><a class="header" href="#rules_rust_bindgen">rules_rust_bindgen</a></h1>
+<p>These rules are for using <a href="https://github.com/rust-lang/rust-bindgen">Bindgen</a> to generate <a href="http://www.rust-lang.org/">Rust</a> bindings to C (and some C++) libraries.</p>
+<h2 id="rules-2"><a class="header" href="#rules-2">Rules</a></h2>
+<ul>
+<li><a href="rust_bindgen.html#rust_bindgen">rust_bindgen</a></li>
+<li><a href="rust_bindgen.html#rust_bindgen_library">rust_bindgen_library</a></li>
+<li><a href="rust_bindgen.html#rust_bindgen_toolchain">rust_bindgen_toolchain</a></li>
+</ul>
+<h2 id="setup-7"><a class="header" href="#setup-7">Setup</a></h2>
+<p>To use the Rust bindgen rules, add the following to your <code>WORKSPACE</code> file to add the
+external repositories for the Rust bindgen toolchain (in addition to the <a href="https://bazelbuild.github.io/rules_rust/#setup">rust rules setup</a>):</p>
+<pre><code class="language-python">load("@rules_rust_bindgen//:repositories.bzl", "rust_bindgen_dependencies", "rust_bindgen_register_toolchains")
+
+rust_bindgen_dependencies()
+
+rust_bindgen_register_toolchains()
+
+load("@rules_rust_bindgen//:transitive_repositories.bzl", "rust_bindgen_transitive_dependencies")
+
+rust_bindgen_transitive_dependencies()
+</code></pre>
+<p>Bindgen aims to be as hermetic as possible so will end up building <code>libclang</code> from <a href="https://github.com/llvm/llvm-project">llvm-project</a> from
+source. If this is found to be undesirable then no Bindgen related calls should be added to your WORKSPACE and instead
+users should define their own repositories using something akin to <a href="https://bazelbuild.github.io/rules_rust/crate_universe.html">crate_universe</a> and define their own
+toolchains following the instructions for <a href="rust_bindgen.html#rust_bindgen_toolchain">rust_bindgen_toolchain</a>.</p>
+<hr />
+<hr />
+<p><a id="rust_bindgen"></a></p>
+<h2 id="rust_bindgen"><a class="header" href="#rust_bindgen">rust_bindgen</a></h2>
+<pre>
+rust_bindgen(<a href="rust_bindgen.html#rust_bindgen-name">name</a>, <a href="rust_bindgen.html#rust_bindgen-bindgen_flags">bindgen_flags</a>, <a href="rust_bindgen.html#rust_bindgen-cc_lib">cc_lib</a>, <a href="rust_bindgen.html#rust_bindgen-clang_flags">clang_flags</a>, <a href="rust_bindgen.html#rust_bindgen-header">header</a>, <a href="rust_bindgen.html#rust_bindgen-merge_cc_lib_objects_into_rlib">merge_cc_lib_objects_into_rlib</a>,
+             <a href="rust_bindgen.html#rust_bindgen-wrap_static_fns">wrap_static_fns</a>)
+</pre>
+<p>Generates a rust source file from a cc_library and a header.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-cc_lib"></a>cc_lib</td><td style="text-align: left">The cc_library that contains the <code>.h</code> file. This is used to find the transitive includes.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-header"></a>header</td><td style="text-align: left">The <code>.h</code> file to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-merge_cc_lib_objects_into_rlib"></a>merge_cc_lib_objects_into_rlib</td><td style="text-align: left">When True, objects from <code>cc_lib</code> will be copied into the <code>rlib</code> archive produced by the rust_library that depends on this <code>rust_bindgen</code> rule (using <code>BuildInfo</code> provider)</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains).</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="rust_bindgen_toolchain"></a></p>
+<h2 id="rust_bindgen_toolchain"><a class="header" href="#rust_bindgen_toolchain">rust_bindgen_toolchain</a></h2>
+<pre>
+rust_bindgen_toolchain(<a href="rust_bindgen.html#rust_bindgen_toolchain-name">name</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-bindgen">bindgen</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-clang">clang</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-default_rustfmt">default_rustfmt</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-libclang">libclang</a>, <a href="rust_bindgen.html#rust_bindgen_toolchain-libstdcxx">libstdcxx</a>)
+</pre>
+<p>The tools required for the <code>rust_bindgen</code> rule.</p>
+<p>This rule depends on the <a href="https://crates.io/crates/bindgen"><code>bindgen</code></a> binary crate, and it
+in turn depends on both a clang binary and the clang library. To obtain these dependencies,
+<code>rust_bindgen_dependencies</code> imports bindgen and its dependencies.</p>
+<pre><code class="language-python">load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
+
+rust_bindgen_toolchain(
+    name = "bindgen_toolchain_impl",
+    bindgen = "//my/rust:bindgen",
+    clang = "//my/clang:clang",
+    libclang = "//my/clang:libclang.so",
+    libstdcxx = "//my/cpp:libstdc++",
+)
+
+toolchain(
+    name = "bindgen_toolchain",
+    toolchain = "bindgen_toolchain_impl",
+    toolchain_type = "@rules_rust_bindgen//:toolchain_type",
+)
+</code></pre>
+<p>This toolchain will then need to be registered in the current <code>WORKSPACE</code>.
+For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>bindgen</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-clang"></a>clang</td><td style="text-align: left">The label of a <code>clang</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-default_rustfmt"></a>default_rustfmt</td><td style="text-align: left">If set, <code>rust_bindgen</code> targets will always format generated sources with <code>rustfmt</code>.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>True</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libclang"></a>libclang</td><td style="text-align: left">A cc_library that provides bindgen's runtime dependency on libclang.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_toolchain-libstdcxx"></a>libstdcxx</td><td style="text-align: left">A cc_library that satisfies libclang's libstdc++ dependency. This is used to make the execution of clang hermetic. If None, system libraries will be used instead.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="rust_bindgen_library"></a></p>
+<h2 id="rust_bindgen_library"><a class="header" href="#rust_bindgen_library">rust_bindgen_library</a></h2>
+<pre>
+rust_bindgen_library(<a href="rust_bindgen.html#rust_bindgen_library-name">name</a>, <a href="rust_bindgen.html#rust_bindgen_library-header">header</a>, <a href="rust_bindgen.html#rust_bindgen_library-cc_lib">cc_lib</a>, <a href="rust_bindgen.html#rust_bindgen_library-bindgen_flags">bindgen_flags</a>, <a href="rust_bindgen.html#rust_bindgen_library-bindgen_features">bindgen_features</a>, <a href="rust_bindgen.html#rust_bindgen_library-clang_flags">clang_flags</a>,
+                     <a href="rust_bindgen.html#rust_bindgen_library-wrap_static_fns">wrap_static_fns</a>, <a href="rust_bindgen.html#rust_bindgen_library-kwargs">kwargs</a>)
+</pre>
+<p>Generates a rust source file for <code>header</code>, and builds a rust_library.</p>
+<p>Arguments are the same as <code>rust_bindgen</code>, and <code>kwargs</code> are passed directly to rust_library.</p>
+<p><strong>PARAMETERS</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left">none</td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-header"></a>header</td><td style="text-align: left">The label of the .h file to generate bindings for.</td><td style="text-align: left">none</td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-cc_lib"></a>cc_lib</td><td style="text-align: left">The label of the cc_library that contains the .h file. This is used to find the transitive includes.</td><td style="text-align: left">none</td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://rust-lang.github.io/rust-bindgen/ for details.</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-bindgen_features"></a>bindgen_features</td><td style="text-align: left">The <code>features</code> attribute for the <code>rust_bindgen</code> target.</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-clang_flags"></a>clang_flags</td><td style="text-align: left">Flags to pass directly to the clang executable.</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-wrap_static_fns"></a>wrap_static_fns</td><td style="text-align: left">Whether to create a separate .c file for static fns. Requires nightly toolchain, and a header that actually needs this feature (otherwise bindgen won't generate the file and Bazel complains",</td><td style="text-align: left"><code>False</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_bindgen_library-kwargs"></a>kwargs</td><td style="text-align: left">Arguments to forward to the underlying <code>rust_library</code> rule.</td><td style="text-align: left">none</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
+<h1 id="rules_rust_prost"><a class="header" href="#rules_rust_prost">rules_rust_prost</a></h1>
+<p>These build rules are used for building <a href="https://developers.google.com/protocol-buffers/">protobufs</a>/<a href="https://grpc.io">gRPC</a> in <a href="http://www.rust-lang.org/">Rust</a> with Bazel
+using <a href="https://github.com/tokio-rs/prost">Prost</a> and <a href="https://github.com/tokio-rs/tonic">Tonic</a></p>
+<h2 id="rules-3"><a class="header" href="#rules-3">Rules</a></h2>
+<ul>
+<li><a href="rust_prost.html#rust_prost_library">rust_prost_library</a></li>
+<li><a href="rust_prost.html#rust_prost_toolchain">rust_prost_toolchain</a></li>
+</ul>
+<h2 id="setup-8"><a class="header" href="#setup-8">Setup</a></h2>
+<pre><code class="language-python">load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
+
+rust_prost_dependencies()
+
+load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
+
+rust_prost_transitive_repositories()
+</code></pre>
+<p>The <code>prost</code> and <code>tonic</code> rules do not specify a default toolchain in order to avoid mismatched
+dependency issues. To setup the <code>prost</code> and <code>tonic</code> toolchain, please see the section
+<a href="rust_prost.html#custom-prost-deps">Customizing <code>prost</code> and <code>tonic</code> Dependencies</a>.</p>
+<p>For additional information about Bazel toolchains, see <a href="https://docs.bazel.build/versions/master/toolchains.html">here</a>.</p>
+<h4 id="customizing-prost-and-tonic-dependencies"><a class="header" href="#customizing-prost-and-tonic-dependencies"><a name="custom-prost-deps">Customizing <code>prost</code> and <code>tonic</code> Dependencies</a></h4>
+<p>These rules depend on the <a href="https://crates.io/crates/prost"><code>prost</code></a> and <a href="https://crates.io/crates/tonic"><code>tonic</code></a> dependencies. To setup the necessary toolchain
+for these rules, you must define a toolchain with the <a href="https://crates.io/crates/prost"><code>prost</code></a>, <a href="https://crates.io/crates/prost-types"><code>prost-types</code></a>, <a href="https://crates.io/crates/tonic"><code>tonic</code></a>, <a href="https://crates.io/crates/protoc-gen-prost"><code>protoc-gen-prost</code></a>, and <a href="https://crates.io/crates/protoc-gen-tonic"><code>protoc-gen-tonic</code></a> crates as well as the <a href="https://github.com/protocolbuffers/protobuf"><code>protoc</code></a> binary.</p>
+<p>To get access to these crates, you can use the <a href="./crate_universe.html">crate_universe</a> repository
+rules. For example:</p>
+<pre><code class="language-python">load("//crate_universe:defs.bzl", "crate", "crates_repository")
+
+crates_repository(
+    name = "crates_io",
+    annotations = {
+        "protoc-gen-prost": [crate.annotation(
+            gen_binaries = ["protoc-gen-prost"],
+            patch_args = [
+                "-p1",
+            ],
+            patches = [
+                # Note: You will need to use this patch until a version greater than `0.2.2` of
+                # `protoc-gen-prost` is released.
+                "@rules_rust//proto/prost/private/3rdparty/patches:protoc-gen-prost.patch",
+            ],
+        )],
+        "protoc-gen-tonic": [crate.annotation(
+            gen_binaries = ["protoc-gen-tonic"],
+        )],
+    },
+    cargo_lockfile = "Cargo.Bazel.lock",
+    mode = "remote",
+    packages = {
+        "prost": crate.spec(
+            version = "0",
+        ),
+        "prost-types": crate.spec(
+            version = "0",
+        ),
+        "protoc-gen-prost": crate.spec(
+            version = "0",
+        ),
+        "protoc-gen-tonic": crate.spec(
+            version = "0",
+        ),
+        "tonic": crate.spec(
+            version = "0",
+        ),
+    },
+    repository_name = "rules_rust_prost",
+    tags = ["manual"],
+)
+</code></pre>
+<p>You can then define a toolchain with the <code>rust_prost_toolchain</code> rule which uses the crates
+defined above. For example:</p>
+<pre><code class="language-python">load("@rules_rust//proto/prost:defs.bzl", "rust_prost_toolchain")
+load("@rules_rust//rust:defs.bzl", "rust_library_group")
+
+rust_library_group(
+    name = "prost_runtime",
+    deps = [
+        "@crates_io//:prost",
+    ],
+)
+
+rust_library_group(
+    name = "tonic_runtime",
+    deps = [
+        ":prost_runtime",
+        "@crates_io//:tonic",
+    ],
+)
+
+rust_prost_toolchain(
+    name = "prost_toolchain_impl",
+    prost_plugin = "@crates_io//:protoc-gen-prost__protoc-gen-prost",
+    prost_runtime = ":prost_runtime",
+    prost_types = "@crates_io//:prost-types",
+    proto_compiler = "@com_google_protobuf//:protoc",
+    tonic_plugin = "@crates_io//:protoc-gen-tonic__protoc-gen-tonic",
+    tonic_runtime = ":tonic_runtime",
+)
+
+toolchain(
+    name = "prost_toolchain",
+    toolchain = "prost_toolchain_impl",
+    toolchain_type = "@rules_rust//proto/prost:toolchain_type",
+)
+</code></pre>
+<p>Lastly, you must register the toolchain in your <code>WORKSPACE</code> file. For example:</p>
+<pre><code class="language-python">register_toolchains("//toolchains:prost_toolchain")
+</code></pre>
+<hr />
+<hr />
+<p><a id="rust_prost_toolchain"></a></p>
+<h2 id="rust_prost_toolchain"><a class="header" href="#rust_prost_toolchain">rust_prost_toolchain</a></h2>
+<pre>
+rust_prost_toolchain(<a href="rust_prost.html#rust_prost_toolchain-name">name</a>, <a href="rust_prost.html#rust_prost_toolchain-include_transitive_deps">include_transitive_deps</a>, <a href="rust_prost.html#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="rust_prost.html#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="rust_prost.html#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>,
+                     <a href="rust_prost.html#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="rust_prost.html#rust_prost_toolchain-prost_types">prost_types</a>, <a href="rust_prost.html#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="rust_prost.html#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="rust_prost.html#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>,
+                     <a href="rust_prost.html#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="rust_prost.html#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
+</pre>
+<p>Rust Prost toolchain rule.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-include_transitive_deps"></a>include_transitive_deps</td><td style="text-align: left">Whether to include transitive dependencies. If set to True, all transitive dependencies will directly accessible by the dependent crate.</td><td style="text-align: left">Boolean</td><td style="text-align: left">optional</td><td style="text-align: left"><code>False</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_opts"></a>prost_opts</td><td style="text-align: left">Additional options to add to Prost.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin"></a>prost_plugin</td><td style="text-align: left">Additional plugins to add to Prost.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_plugin_flag"></a>prost_plugin_flag</td><td style="text-align: left">Prost plugin flag format. (e.g. <code>--plugin=protoc-gen-prost=%s</code>)</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-prost=%s"</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_runtime"></a>prost_runtime</td><td style="text-align: left">The Prost runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-prost_types"></a>prost_types</td><td style="text-align: left">The Prost types crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-proto_compiler"></a>proto_compiler</td><td style="text-align: left">The protoc compiler to use. Note that this attribute is deprecated - prefer to use --incompatible_enable_proto_toolchain_resolution.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_opts"></a>tonic_opts</td><td style="text-align: left">Additional options to add to Tonic.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin"></a>tonic_plugin</td><td style="text-align: left">Additional plugins to add to Tonic.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_plugin_flag"></a>tonic_plugin_flag</td><td style="text-align: left">Tonic plugin flag format. (e.g. <code>--plugin=protoc-gen-tonic=%s</code>))</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"--plugin=protoc-gen-tonic=%s"</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_runtime"></a>tonic_runtime</td><td style="text-align: left">The Tonic runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="rust_prost_library"></a></p>
+<h2 id="rust_prost_library"><a class="header" href="#rust_prost_library">rust_prost_library</a></h2>
+<pre>
+rust_prost_library(<a href="rust_prost.html#rust_prost_library-name">name</a>, <a href="rust_prost.html#rust_prost_library-kwargs">kwargs</a>)
+</pre>
+<p>A rule for generating a Rust library using Prost.</p>
+<p><strong>PARAMETERS</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_prost_library-name"></a>name</td><td style="text-align: left">The name of the target.</td><td style="text-align: left">none</td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_library-kwargs"></a>kwargs</td><td style="text-align: left">Additional keyword arguments for the underlying <code>rust_prost_library</code> rule.</td><td style="text-align: left">none</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
+<h1 id="rules_rust_protobuf"><a class="header" href="#rules_rust_protobuf">rules_rust_protobuf</a></h1>
+<p>These build rules are used for building <a href="https://developers.google.com/protocol-buffers/">protobufs</a>/<a href="https://grpc.io">gRPC</a> in <a href="http://www.rust-lang.org/">Rust</a> with Bazel
+using <a href="https://github.com/stepancheg/rust-protobuf/"><code>rust-protobuf</code></a>.</p>
+<h2 id="setup-9"><a class="header" href="#setup-9">Setup</a></h2>
+<p>To use the Rust proto rules, add the following to your <code>WORKSPACE</code> file to add the
+external repositories for the Rust proto toolchain (in addition to the <a href="..">rust rules setup</a>):</p>
+<pre><code class="language-python">load("@rules_rust//proto/protobuf:repositories.bzl", "rust_proto_protobuf_dependencies", "rust_proto_protobuf_register_toolchains")
+
+rust_proto_protobuf_dependencies()
+
+rust_proto_protobuf_register_toolchains()
+
+load("@rules_rust//proto/protobuf:transitive_repositories.bzl", "rust_proto_protobuf_transitive_repositories")
+
+rust_proto_protobuf_transitive_repositories()
+</code></pre>
+<p>This will load the required dependencies for the <a href="https://github.com/stepancheg/rust-protobuf/"><code>rust-protobuf</code></a> rules. It will also
+register a default toolchain for the <code>rust_proto_library</code> and <code>rust_grpc_library</code> rules.</p>
+<p>To customize the <code>rust_proto_library</code> and <code>rust_grpc_library</code> toolchain, please see the section
+<a href="rust_protobuf.html#custom-proto-deps">Customizing <code>rust-protobuf</code> Dependencies</a>.</p>
+<p>For additional information about Bazel toolchains, see <a href="https://docs.bazel.build/versions/master/toolchains.html">here</a>.</p>
+<h4 id="customizing-rust-protobuf-dependencies"><a class="header" href="#customizing-rust-protobuf-dependencies"><a name="custom-proto-deps">Customizing <code>rust-protobuf</code> Dependencies</a></h4>
+<p>These rules depend on the <a href="https://crates.io/crates/protobuf"><code>protobuf</code></a> and
+the <a href="https://crates.io/crates/grpc"><code>grpc</code></a> crates in addition to the <a href="https://github.com/google/protobuf">protobuf
+compiler</a>. To obtain these crates,
+<code>rust_proto_repositories</code> imports the given crates using BUILD files generated with
+<a href="./crate_universe.html">crate_universe</a>.</p>
+<p>If you want to either change the protobuf and gRPC rust compilers, or to
+simply use <a href="./crate_universe.html">crate_universe</a> in a more
+complex scenario (with more dependencies), you must redefine those
+dependencies.</p>
+<p>To do this, once you've imported the needed dependencies (see our
+<a href="https://github.com/bazelbuild/rules_rust/blob/main/proto/protobuf/3rdparty/BUILD.bazel">@rules_rust//proto/protobuf/3rdparty/BUILD.bazel</a>
+file to see the default dependencies), you need to create your own toolchain.
+To do so you can create a BUILD file with your toolchain definition, for example:</p>
+<pre><code class="language-python">load("@rules_rust//proto:toolchain.bzl", "rust_proto_toolchain")
+
+rust_proto_toolchain(
+    name = "proto-toolchain-impl",
+    # Path to the protobuf compiler.
+    protoc = "@com_google_protobuf//:protoc",
+    # Protobuf compiler plugin to generate rust gRPC stubs.
+    grpc_plugin = "//3rdparty/crates:cargo_bin_protoc_gen_rust_grpc",
+    # Protobuf compiler plugin to generate rust protobuf stubs.
+    proto_plugin = "//3rdparty/crates:cargo_bin_protoc_gen_rust",
+)
+
+toolchain(
+    name = "proto-toolchain",
+    toolchain = ":proto-toolchain-impl",
+    toolchain_type = "@rules_rust//proto/protobuf:toolchain_type",
+)
+</code></pre>
+<p>Now that you have your own toolchain, you need to register it by
+inserting the following statement in your <code>WORKSPACE</code> file:</p>
+<pre><code class="language-python">register_toolchains("//my/toolchains:proto-toolchain")
+</code></pre>
+<p>Finally, you might want to set the <code>rust_deps</code> attribute in
+<code>rust_proto_library</code> and <code>rust_grpc_library</code> to change the compile-time
+dependencies:</p>
+<pre><code class="language-python">rust_proto_library(
+    ...
+    rust_deps = ["//3rdparty/crates:protobuf"],
+    ...
+)
+
+rust_grpc_library(
+    ...
+    rust_deps = [
+        "//3rdparty/crates:protobuf",
+        "//3rdparty/crates:grpc",
+        "//3rdparty/crates:tls_api",
+        "//3rdparty/crates:tls_api_stub",
+    ],
+    ...
+)
+</code></pre>
+<p><strong>Note</strong>: Ideally, we would inject those dependencies from the toolchain,
+but due to <a href="https://github.com/bazelbuild/bazel/issues/6889">bazelbuild/bazel#6889</a>
+all dependencies added via the toolchain ends-up being in the wrong
+configuration.</p>
+<hr />
+<hr />
+<p><a id="rust_grpc_library"></a></p>
+<h2 id="rust_grpc_library"><a class="header" href="#rust_grpc_library">rust_grpc_library</a></h2>
+<pre>
+rust_grpc_library(<a href="rust_protobuf.html#rust_grpc_library-name">name</a>, <a href="rust_protobuf.html#rust_grpc_library-deps">deps</a>, <a href="rust_protobuf.html#rust_grpc_library-crate_name">crate_name</a>, <a href="rust_protobuf.html#rust_grpc_library-rust_deps">rust_deps</a>, <a href="rust_protobuf.html#rust_grpc_library-rustc_flags">rustc_flags</a>)
+</pre>
+<p>Builds a Rust library crate from a set of <code>proto_library</code>s suitable for gRPC.</p>
+<p>Example:</p>
+<pre><code class="language-python">load("@rules_rust_protobuf//:defs.bzl", "rust_grpc_library")
+
+proto_library(
+    name = "my_proto",
+    srcs = ["my.proto"]
+)
+
+rust_grpc_library(
+    name = "rust",
+    deps = [":my_proto"],
+)
+
+rust_binary(
+    name = "my_service",
+    srcs = ["my_service.rs"],
+    deps = [":rust"],
+)
+</code></pre>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_grpc_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_grpc_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding gRPC stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_grpc_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_grpc_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_grpc_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="rust_proto_library"></a></p>
+<h2 id="rust_proto_library"><a class="header" href="#rust_proto_library">rust_proto_library</a></h2>
+<pre>
+rust_proto_library(<a href="rust_protobuf.html#rust_proto_library-name">name</a>, <a href="rust_protobuf.html#rust_proto_library-deps">deps</a>, <a href="rust_protobuf.html#rust_proto_library-crate_name">crate_name</a>, <a href="rust_protobuf.html#rust_proto_library-rust_deps">rust_deps</a>, <a href="rust_protobuf.html#rust_proto_library-rustc_flags">rustc_flags</a>)
+</pre>
+<p>Builds a Rust library crate from a set of <code>proto_library</code>s.</p>
+<p>Example:</p>
+<pre><code class="language-python">load("@rules_rust_protobuf//:defs.bzl", "rust_proto_library")
+
+proto_library(
+    name = "my_proto",
+    srcs = ["my.proto"]
+)
+
+rust_proto_library(
+    name = "rust",
+    deps = [":my_proto"],
+)
+
+rust_binary(
+    name = "my_proto_binary",
+    srcs = ["my_proto_binary.rs"],
+    deps = [":rust"],
+)
+</code></pre>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_proto_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_proto_library-deps"></a>deps</td><td style="text-align: left">List of proto_library dependencies that will be built. One crate for each proto_library will be created with the corresponding stubs.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_proto_library-crate_name"></a>crate_name</td><td style="text-align: left">Crate name to use for this target.<br><br>This must be a valid Rust identifier, i.e. it may contain only alphanumeric characters and underscores. Defaults to the target name, with any hyphens replaced by underscores.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>""</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_proto_library-rust_deps"></a>rust_deps</td><td style="text-align: left">The crates the generated library depends on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_proto_library-rustc_flags"></a>rustc_flags</td><td style="text-align: left">List of compiler flags passed to <code>rustc</code>.<br><br>These strings are subject to Make variable expansion for predefined source/output path variables like <code>$location</code>, <code>$execpath</code>, and <code>$rootpath</code>. This expansion is useful if you wish to pass a generated file of arguments to rustc: <code>@$(location //package:target)</code>.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><!-- Generated with Stardoc: http://skydoc.bazel.build -->
+<h1 id="rules_rust_wasm_bindgen"><a class="header" href="#rules_rust_wasm_bindgen">rules_rust_wasm_bindgen</a></h1>
+<p>Bazel rules for generating wasm modules for Javascript using <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a>.</p>
+<h2 id="setup-10"><a class="header" href="#setup-10">Setup</a></h2>
+<p>To begin using the <code>wasm-bindgen</code> rules, users can load the necessary dependencies
+in their workspace by adding the following to their <code>WORKSPACE.bazel</code> file.</p>
+<pre><code class="language-python">load("@rules_rust_wasm_bindgen//:repositories.bzl", "rust_wasm_bindgen_dependencies", "rust_wasm_bindgen_register_toolchains")
+
+rust_wasm_bindgen_dependencies()
+
+rust_wasm_bindgen_register_toolchains()
+</code></pre>
+<p>This should enable users to start using the <a href="rust_wasm_bindgen.html#rust_wasm_bindgen">rust_wasm_bindgen</a>
+rule. However, it's common to want to control the version of <code>wasm-bindgen</code> in the
+workspace instead of relying on the one provided by <code>rules_rust</code>. In this case, users
+should avoid calling <code>rust_wasm_bindgen_register_toolchains</code> and instead use the
+<a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a> rule to define their own
+toolchains to register in the workspace.</p>
+<h3 id="interfacing-with-javascript-rules"><a class="header" href="#interfacing-with-javascript-rules">Interfacing with Javascript rules</a></h3>
+<p>While it's recommended for users to mantain their own , in the
+<code>@rules_rust_wasm_bindgen</code> package there exists interface sub-packages for various
+Javascript Bazel rules. E.g. <code>build_bazel_rules_nodejs</code> or <code>aspect_rules_js</code>. The
+rules defined there are a more convenient way to use <code>rust_wasm_bindgen</code> with the
+associated javascript rules due to the inclusion of additional providers. Each
+directory contains a <code>defs.bzl</code> file that defines the different variants of
+<code>rust_wasm_bindgen</code>. (e.g. <code>nodejs_rust_wasm_bindgen</code> for the <code>rules_nodejs</code> submodule).</p>
+<p><a id="rust_wasm_bindgen"></a></p>
+<h2 id="rust_wasm_bindgen"><a class="header" href="#rust_wasm_bindgen">rust_wasm_bindgen</a></h2>
+<pre>
+rust_wasm_bindgen(<a href="rust_wasm_bindgen.html#rust_wasm_bindgen-name">name</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-bindgen_flags">bindgen_flags</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-target">target</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-target_arch">target_arch</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen-wasm_file">wasm_file</a>)
+</pre>
+<p>Generates javascript and typescript bindings for a webassembly module using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a>.</p>
+<p>An example of this rule in use can be seen at <a href="../examples/wasm">@rules_rust//examples/wasm</a></p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen-bindgen_flags"></a>bindgen_flags</td><td style="text-align: left">Flags to pass directly to the bindgen executable. See https://github.com/rustwasm/wasm-bindgen/ for details.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target"></a>target</td><td style="text-align: left">The type of output to generate. See https://rustwasm.github.io/wasm-bindgen/reference/deployment.html for details.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"bundler"</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen-target_arch"></a>target_arch</td><td style="text-align: left">The target architecture to use for the wasm-bindgen command line option.</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"wasm32"</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen-wasm_file"></a>wasm_file</td><td style="text-align: left">The <code>.wasm</code> file or crate to generate bindings for.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+</tbody></table>
+</div>
+<p><a id="rust_wasm_bindgen_toolchain"></a></p>
+<h2 id="rust_wasm_bindgen_toolchain"><a class="header" href="#rust_wasm_bindgen_toolchain">rust_wasm_bindgen_toolchain</a></h2>
+<pre>
+rust_wasm_bindgen_toolchain(<a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain-name">name</a>, <a href="rust_wasm_bindgen.html#rust_wasm_bindgen_toolchain-bindgen">bindgen</a>)
+</pre>
+<p>The tools required for the <code>rust_wasm_bindgen</code> rule.</p>
+<p>In cases where users want to control or change the version of <code>wasm-bindgen</code> used by <a href="rust_wasm_bindgen.html#rust_wasm_bindgen">rust_wasm_bindgen</a>,
+a unique toolchain can be created as in the example below:</p>
+<pre><code class="language-python">load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
+
+rust_bindgen_toolchain(
+    bindgen = "//3rdparty/crates:wasm_bindgen_cli__bin",
+)
+
+toolchain(
+    name = "wasm_bindgen_toolchain",
+    toolchain = "wasm_bindgen_toolchain_impl",
+    toolchain_type = "@rules_rust_wasm_bindgen//:toolchain_type",
+)
+</code></pre>
+<p>Now that you have your own toolchain, you need to register it by
+inserting the following statement in your <code>WORKSPACE</code> file:</p>
+<pre><code class="language-python">register_toolchains("//my/toolchains:wasm_bindgen_toolchain")
+</code></pre>
+<p>For additional information, see the <a href="https://docs.bazel.build/versions/master/toolchains.html">Bazel toolchains documentation</a>.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_wasm_bindgen_toolchain-bindgen"></a>bindgen</td><td style="text-align: left">The label of a <code>wasm-bindgen-cli</code> executable.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="RustWasmBindgenInfo"></a></p>
+<h2 id="rustwasmbindgeninfo"><a class="header" href="#rustwasmbindgeninfo">RustWasmBindgenInfo</a></h2>
+<pre>
+RustWasmBindgenInfo(<a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-js">js</a>, <a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-ts">ts</a>, <a href="rust_wasm_bindgen.html#RustWasmBindgenInfo-wasm">wasm</a>)
+</pre>
+<p>Info about wasm-bindgen outputs.</p>
+<p><strong>FIELDS</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-js"></a>js</td><td style="text-align: left">Depset[File]: The Javascript files produced by <code>wasm-bindgen</code>.</td></tr>
+<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-ts"></a>ts</td><td style="text-align: left">Depset[File]: The Typescript files produced by <code>wasm-bindgen</code>.</td></tr>
+<tr><td style="text-align: left"><a id="RustWasmBindgenInfo-wasm"></a>wasm</td><td style="text-align: left">File: The <code>.wasm</code> file generated by <code>wasm-bindgen</code>.</td></tr>
+</tbody></table>
+</div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
