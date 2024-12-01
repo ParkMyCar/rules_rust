@@ -1,0 +1,16 @@
+[package]
+name = "hello_world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[lints.rust]
+unknown_lints = "warn"
+dead_code = "allow"
+
+[lints.clippy]
+box_default = "deny"
+
+[lints.rustdoc]
+unportable_markdown = "allow"

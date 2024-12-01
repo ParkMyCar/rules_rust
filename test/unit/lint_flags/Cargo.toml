@@ -1,0 +1,11 @@
+[workspace]
+members = ["sub_project_workspace"]
+
+[workspace.lints.rust]
+unknown_lints = "warn"
+
+[workspace.lints.clippy]
+box_default = "deny"
+
+[workspace.lints.rustdoc]
+unportable_markdown = "allow"

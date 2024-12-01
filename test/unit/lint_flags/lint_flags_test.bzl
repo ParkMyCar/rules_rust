@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest")
 load("//rust:defs.bzl", "rust_clippy", "rust_doc", "rust_library", "rust_lint_config")
+load("//cargo:defs.bzl", "extract_cargo_lints")
 load("//test/unit:common.bzl", "assert_argv_contains", "assert_argv_contains_not")
 
 def target_action_contains_not_flag(env, target, flags):
@@ -48,9 +49,9 @@ extra_rustc_flag_present_test = analysistest.make(
     },
 )
 
-def _define_test_targets():
+def _define_test_targets_lint_config():
     rust_lint_config(
-        name = "workspace_lints",
+        name = "lint_config",
         rustc = {"unknown_lints": "allow"},
         rustc_check_cfg = {"bazel": []},
         clippy = {"box_default": "warn"},
@@ -58,20 +59,67 @@ def _define_test_targets():
     )
 
     rust_library(
-        name = "lib",
-        srcs = ["lib.rs"],
-        lint_config = ":workspace_lints",
-        edition = "2018",
+        name = "lib_lint_config",
+        srcs = ["sub_project/lib.rs"],
+        lint_config = ":lint_config",
+        edition = "2021",
     )
 
     rust_clippy(
-        name = "clippy",
-        deps = [":lib"],
+        name = "clippy_lint_config",
+        deps = [":lib_lint_config"],
     )
 
     rust_doc(
-        name = "docs",
-        crate = ":lib",
+        name = "docs_lint_config",
+        crate = ":lib_lint_config",
+    )
+
+def _define_test_targets_cargo_lints():
+    extract_cargo_lints(
+        name = "sub_project_lints",
+        manifest = "sub_project/Cargo.toml",
+    )
+
+    rust_library(
+        name = "lib_cargo_lints",
+        srcs = ["sub_project/lib.rs"],
+        lint_config = ":sub_project_lints",
+        edition = "2021",
+    )
+
+    rust_clippy(
+        name = "clippy_cargo_lints",
+        deps = [":lib_cargo_lints"],
+    )
+
+    rust_doc(
+        name = "docs_cargo_lints",
+        crate = ":lib_cargo_lints",
+    )
+
+def _define_test_targets_cargo_workspace_lints():
+    extract_cargo_lints(
+        name = "sub_project_workspace_lints",
+        manifest = "sub_project_workspace/Cargo.toml",
+        workspace = "Cargo.toml",
+    )
+
+    rust_library(
+        name = "lib_cargo_workspace_lints",
+        srcs = ["sub_project/lib.rs"],
+        lint_config = ":sub_project_workspace_lints",
+        edition = "2021",
+    )
+
+    rust_clippy(
+        name = "clippy_cargo_workspace_lints",
+        deps = [":lib_cargo_workspace_lints"],
+    )
+
+    rust_doc(
+        name = "docs_cargo_workspace_lints",
+        crate = ":lib_cargo_workspace_lints",
     )
 
 def lint_flags_test_suite(name):
@@ -81,12 +129,14 @@ def lint_flags_test_suite(name):
         name (str): Name of the macro.
     """
 
-    _define_test_targets()
+    # 1. Test extracting lints from a single project's Cargo.toml
+
+    _define_test_targets_lint_config()
 
     extra_rustc_flag_present_test(
-        name = "rustc_lints_apply_flags",
-        target_under_test = ":lib",
-        lib_exec = ":lib",
+        name = "rustc_lints_apply_flags_lint_config",
+        target_under_test = ":lib_lint_config",
+        lib_exec = ":lib_lint_config",
         rustc_flags = [
             "--allow=unknown_lints",
             "--check-cfg=cfg(bazel)",
@@ -94,24 +144,80 @@ def lint_flags_test_suite(name):
     )
 
     extra_rustc_flag_present_test(
-        name = "clippy_lints_apply_flags",
-        target_under_test = ":clippy",
-        lib_exec = ":clippy",
+        name = "clippy_lints_apply_flags_lint_config",
+        target_under_test = ":clippy_lint_config",
+        lib_exec = ":clippy_lint_config",
         rustc_flags = ["--warn=clippy::box_default"],
     )
 
     extra_rustc_flag_present_test(
-        name = "rustdoc_lints_apply_flags",
-        target_under_test = ":docs",
-        lib_exec = ":docs",
+        name = "rustdoc_lints_apply_flags_lint_config",
+        target_under_test = ":docs_lint_config",
+        lib_exec = ":docs_lint_config",
         rustc_flags = ["--deny=rustdoc::unportable_markdown"],
     )
+
+    # 2. Test extracting lints from a single project's Cargo.toml
+
+    _define_test_targets_cargo_lints()
+
+    extra_rustc_flag_present_test(
+        name = "rustc_lints_apply_flags_cargo_lints",
+        target_under_test = ":lib_cargo_lints",
+        lib_exec = ":lib_cargo_lints",
+        rustc_flags = ["--warn=unknown_lints"],
+    )
+
+    extra_rustc_flag_present_test(
+        name = "clippy_lints_apply_flags_cargo_lints",
+        target_under_test = ":clippy_cargo_lints",
+        lib_exec = ":clippy_cargo_lints",
+        rustc_flags = ["--warn=clippy::box_default"],
+    )
+
+    extra_rustc_flag_present_test(
+        name = "rustdoc_lints_apply_flags_cargo_lints",
+        target_under_test = ":docs_cargo_lints",
+        lib_exec = ":docs_cargo_lints",
+        rustc_flags = ["--deny=rustdoc::unportable_markdown"],
+    )
+
+    # 3. Test extracting lints from a Cargo.toml that inherits from a Workspace.
+
+    _define_test_targets_cargo_workspace_lints()
+
+    extra_rustc_flag_present_test(
+        name = "rustc_lints_apply_flags_cargo_workspace_lints",
+        target_under_test = ":lib_cargo_workspace_lints",
+        lib_exec = ":lib_cargo_workspace_lints",
+        rustc_flags = ["--warn=unknown_lints"],
+    )
+
+    extra_rustc_flag_present_test(
+        name = "clippy_lints_apply_flags_cargo_workspace_lints",
+        target_under_test = ":clippy_cargo_workspace_lints",
+        lib_exec = ":clippy_cargo_workspace_lints",
+        rustc_flags = ["--warn=clippy::box_default"],
+    )
+
+    extra_rustc_flag_present_test(
+        name = "rustdoc_lints_apply_flags_cargo_workspace_lints",
+        target_under_test = ":docs_cargo_workspace_lints",
+        lib_exec = ":docs_cargo_workspace_lints",
+        rustc_flags = ["--deny=rustdoc::unportable_markdown"],
+    )    
 
     native.test_suite(
         name = name,
         tests = [
-            ":rustc_lints_apply_flags",
-            ":clippy_lints_apply_flags",
-            ":rustdoc_lints_apply_flags",
+            ":rustc_lints_apply_flags_lint_config",
+            ":clippy_lints_apply_flags_lint_config",
+            ":rustdoc_lints_apply_flags_lint_config",
+            ":rustc_lints_apply_flags_cargo_lints",
+            ":clippy_lints_apply_flags_cargo_lints",
+            ":rustdoc_lints_apply_flags_cargo_lints",
+            ":rustc_lints_apply_flags_cargo_workspace_lints",
+            ":clippy_lints_apply_flags_cargo_workspace_lints",
+            ":rustdoc_lints_apply_flags_cargo_workspace_lints",
         ],
     )

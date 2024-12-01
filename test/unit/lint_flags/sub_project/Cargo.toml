@@ -1,0 +1,15 @@
+[package]
+name = "sub_project"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[lints.rust]
+unknown_lints = "warn"
+
+[lints.clippy]
+box_default = "deny"
+
+[lints.rustdoc]
+unportable_markdown = "allow"

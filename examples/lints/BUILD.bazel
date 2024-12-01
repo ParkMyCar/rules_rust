@@ -1,0 +1,16 @@
+load("@rules_rust//rust:defs.bzl", "rust_clippy", "rust_doc", "rust_library", "rust_lint_config")
+load("@rules_rust//cargo:defs.bzl", "extract_cargo_lints")
+
+extract_cargo_lints(
+    name = "hello_world_lints",
+    manifest = "hello_world/Cargo.toml",
+)
+
+rust_library(
+    name = "hello_world",
+    srcs = ["hello_world/src/lib.rs"],
+    lint_config = ":hello_world_lints",
+    edition = "2021",
+)
+
+

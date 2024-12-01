@@ -57,6 +57,7 @@ struct LintsArgs {
     output_rustc_check_cfg: PathBuf,
 }
 
+#[derive(Debug)]
 enum LintGroup {
     Rustc,
     RustCheckCfg,
@@ -153,6 +154,7 @@ fn generate_lints_info(
 
         if let Some(args) = format_lint_set(lints, &group) {
             for arg in args {
+                println!("WRITING ARG {group:?} : {arg}");
                 writeln!(&mut writer, "{arg}")?;
             }
         };
