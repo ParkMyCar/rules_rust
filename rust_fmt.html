@@ -179,11 +179,11 @@ build --output_groups=+rustfmt_checks
 </code></pre>
 <p>It's recommended to only enable this aspect in your CI environment so formatting issues do not
 impact user's ability to rapidly iterate on changes.</p>
-<p>The <code>rustfmt_aspect</code> also uses a <code>--@rules_rust//:rustfmt.toml</code> setting which determines the
+<p>The <code>rustfmt_aspect</code> also uses a <code>--@rules_rust//rust/settings:rustfmt.toml</code> setting which determines the
 <a href="https://rust-lang.github.io/rustfmt/">configuration file</a> used by the formatter (<code>@rules_rust//tools/rustfmt</code>) and the aspect
 (<code>rustfmt_aspect</code>). This flag can be added to your <code>.bazelrc</code> file to ensure a consistent config
 file is used whenever <code>rustfmt</code> is run:</p>
-<pre><code class="language-text">build --@rules_rust//:rustfmt.toml=//:rustfmt.toml
+<pre><code class="language-text">build --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
 </code></pre>
 <h3 id="tips"><a class="header" href="#tips">Tips</a></h3>
 <p>Any target which uses Bazel generated sources will cause the <code>@rules_rust//tools/rustfmt</code> tool to fail with
@@ -226,7 +226,7 @@ rustfmt_aspect(<a href="#rustfmt_aspect-name">name</a>)
 <ul>
 <li><code>rustfmt_checks</code>: Executes <code>rustfmt --check</code> on the specified target.</li>
 </ul>
-<p>The build setting <code>@rules_rust//:rustfmt.toml</code> is used to control the Rustfmt <a href="https://rust-lang.github.io/rustfmt/">configuration settings</a>
+<p>The build setting <code>@rules_rust//rust/settings:rustfmt.toml</code> is used to control the Rustfmt <a href="https://rust-lang.github.io/rustfmt/">configuration settings</a>
 used at runtime.</p>
 <p>This aspect is executed on any target which provides the <code>CrateInfo</code> provider. However
 users may tag a target with <code>no-rustfmt</code> or <code>no-format</code> to have it skipped. Additionally,

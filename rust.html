@@ -187,7 +187,7 @@ capture_clippy_output(<a href="#capture_clippy_output-name">name</a>)
 <pre>
 error_format(<a href="#error_format-name">name</a>)
 </pre>
-<p>Change the <a href="https://doc.rust-lang.org/rustc/command-line-arguments.html#option-error-format">--error-format</a> flag from the command line with <code>--@rules_rust//:error_format</code>. See rustc documentation for valid values.</p>
+<p>Change the <a href="https://doc.rust-lang.org/rustc/command-line-arguments.html#option-error-format">--error-format</a> flag from the command line with <code>--@rules_rust//rust/settings:error_format</code>. See rustc documentation for valid values.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
 <tr><td style="text-align: left"><a id="error_format-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
@@ -198,7 +198,7 @@ error_format(<a href="#error_format-name">name</a>)
 <pre>
 extra_rustc_flag(<a href="#extra_rustc_flag-name">name</a>)
 </pre>
-<p>Add additional rustc_flag from the command line with <code>--@rules_rust//:extra_rustc_flag</code>. Multiple uses are accumulated and appended after the extra_rustc_flags.</p>
+<p>Add additional rustc_flag from the command line with <code>--@rules_rust//rust/settings:extra_rustc_flag</code>. Multiple uses are accumulated and appended after the extra_rustc_flags.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
 <tr><td style="text-align: left"><a id="extra_rustc_flag-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
@@ -209,7 +209,7 @@ extra_rustc_flag(<a href="#extra_rustc_flag-name">name</a>)
 <pre>
 extra_rustc_flags(<a href="#extra_rustc_flags-name">name</a>)
 </pre>
-<p>Add additional rustc_flags from the command line with <code>--@rules_rust//:extra_rustc_flags</code>. This flag should only be used for flags that need to be applied across the entire build. For options that apply to individual crates, use the rustc_flags attribute on the individual crate's rule instead. NOTE: These flags not applied to the exec configuration (proc-macros, cargo_build_script, etc); use <code>--@rules_rust//:extra_exec_rustc_flags</code> to apply flags to the exec configuration.</p>
+<p>Add additional rustc_flags from the command line with <code>--@rules_rust//rust/settings:extra_rustc_flags</code>. This flag should only be used for flags that need to be applied across the entire build. For options that apply to individual crates, use the rustc_flags attribute on the individual crate's rule instead. NOTE: These flags not applied to the exec configuration (proc-macros, cargo_build_script, etc); use <code>--@rules_rust//rust/settings:extra_exec_rustc_flags</code> to apply flags to the exec configuration.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
 <tr><td style="text-align: left"><a id="extra_rustc_flags-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>

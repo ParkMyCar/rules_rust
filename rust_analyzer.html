@@ -224,7 +224,7 @@ to ensure a <code>rust-project.json</code> file is created and up to date when t
 </code></pre>
 <h4 id="alternative-vscode-option-prototype"><a class="header" href="#alternative-vscode-option-prototype">Alternative vscode option (prototype)</a></h4>
 <p>Add the following to your bazelrc:</p>
-<pre><code>build --@rules_rust//:rustc_output_diagnostics=true --output_groups=+rust_lib_rustc_output,+rust_metadata_rustc_output
+<pre><code>build --@rules_rust//rust/settings:rustc_output_diagnostics=true --output_groups=+rust_lib_rustc_output,+rust_metadata_rustc_output
 </code></pre>
 <p>Then you can use a prototype <a href="https://marketplace.visualstudio.com/items?itemName=MattStark.bazel-rust-analyzer">rust-analyzer plugin</a> that automatically collects the outputs whenever you recompile.</p>
 <p><a id="rust_analyzer_toolchain"></a></p>

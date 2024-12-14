@@ -266,6 +266,18 @@ toolchain(
 </code></pre>
 <hr />
 <hr />
+<p><a id="rust_prost_library"></a></p>
+<h2 id="rust_prost_library"><a class="header" href="#rust_prost_library">rust_prost_library</a></h2>
+<pre>
+rust_prost_library(<a href="#rust_prost_library-name">name</a>, <a href="#rust_prost_library-proto">proto</a>)
+</pre>
+<p>A rule for generating a Rust library using Prost.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_prost_library-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_library-proto"></a>proto</td><td style="text-align: left">A <code>proto_library</code> target for which to generate Rust gencode.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+</tbody></table>
+</div>
 <p><a id="rust_prost_toolchain"></a></p>
 <h2 id="rust_prost_toolchain"><a class="header" href="#rust_prost_toolchain">rust_prost_toolchain</a></h2>
 <pre>
@@ -290,16 +302,48 @@ rust_prost_toolchain(<a href="#rust_prost_toolchain-name">name</a>, <a href="#ru
 <tr><td style="text-align: left"><a id="rust_prost_toolchain-tonic_runtime"></a>tonic_runtime</td><td style="text-align: left">The Tonic runtime crates to use.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
 </tbody></table>
 </div>
-<p><a id="rust_prost_library"></a></p>
-<h2 id="rust_prost_library"><a class="header" href="#rust_prost_library">rust_prost_library</a></h2>
+<p><a id="rust_prost_transform"></a></p>
+<h2 id="rust_prost_transform"><a class="header" href="#rust_prost_transform">rust_prost_transform</a></h2>
 <pre>
-rust_prost_library(<a href="#rust_prost_library-name">name</a>, <a href="#rust_prost_library-kwargs">kwargs</a>)
+rust_prost_transform(<a href="#rust_prost_transform-name">name</a>, <a href="#rust_prost_transform-deps">deps</a>, <a href="#rust_prost_transform-srcs">srcs</a>, <a href="#rust_prost_transform-prost_opts">prost_opts</a>, <a href="#rust_prost_transform-tonic_opts">tonic_opts</a>)
 </pre>
-<p>A rule for generating a Rust library using Prost.</p>
-<p><strong>PARAMETERS</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Default Value</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_prost_library-name"></a>name</td><td style="text-align: left">The name of the target.</td><td style="text-align: left">none</td></tr>
-<tr><td style="text-align: left"><a id="rust_prost_library-kwargs"></a>kwargs</td><td style="text-align: left">Additional keyword arguments for the underlying <code>rust_prost_library</code> rule.</td><td style="text-align: left">none</td></tr>
+<p>A rule for transforming the outputs of <code>ProstGenProto</code> actions.</p>
+<p>This rule is used by adding it to the <code>data</code> attribute of <code>proto_library</code> targets. E.g.</p>
+<pre><code class="language-python">load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_rust_prost//:defs.bzl", "rust_prost_library", "rust_prost_transform")
+
+rust_prost_transform(
+    name = "a_transform",
+    srcs = [
+        "a_src.rs",
+    ],
+)
+
+proto_library(
+    name = "a_proto",
+    srcs = [
+        "a.proto",
+    ],
+    data = [
+        ":transform",
+    ],
+)
+
+rust_prost_library(
+    name = "a_rs_proto",
+    proto = ":a_proto",
+)
+</code></pre>
+<p>The <code>rust_prost_library</code> will spawn an action on the <code>a_proto</code> target which consumes the
+<code>a_transform</code> rule to provide a means of granularly modifying a proto library for <code>ProstGenProto</code>
+actions with minimal impact to other consumers.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="rust_prost_transform-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_transform-deps"></a>deps</td><td style="text-align: left">Additional dependencies to add to the compiled crate.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_transform-srcs"></a>srcs</td><td style="text-align: left">Additional source files to include in generated Prost source code.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_transform-prost_opts"></a>prost_opts</td><td style="text-align: left">Additional options to add to Prost.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="rust_prost_transform-tonic_opts"></a>tonic_opts</td><td style="text-align: left">Additional options to add to Tonic.</td><td style="text-align: left">List of strings</td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 </tbody></table>
 </div>
                     </main>

@@ -174,7 +174,7 @@ build --output_groups=+clippy_checks
 <p>To use a local clippy.toml, add the following flag to your <code>.bazelrc</code>. Note that due to
 the upstream implementation of clippy, this file must be named either <code>.clippy.toml</code> or
 <code>clippy.toml</code>. Using a custom config file requires Rust 1.34.0 or newer.</p>
-<pre><code class="language-text">build --@rules_rust//:clippy.toml=//:clippy.toml
+<pre><code class="language-text">build --@rules_rust//rust/settings:clippy.toml=//:clippy.toml
 </code></pre>
 <p><a id="rust_clippy"></a></p>
 <h2 id="rust_clippy"><a class="header" href="#rust_clippy">rust_clippy</a></h2>
