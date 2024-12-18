@@ -269,6 +269,8 @@ toolchain(
 <p><a id="rust_prost_library"></a></p>
 <h2 id="rust_prost_library"><a class="header" href="#rust_prost_library">rust_prost_library</a></h2>
 <pre>
+load("@rules_rust_prost//:defs.bzl", "rust_prost_library")
+
 rust_prost_library(<a href="#rust_prost_library-name">name</a>, <a href="#rust_prost_library-proto">proto</a>)
 </pre>
 <p>A rule for generating a Rust library using Prost.</p>
@@ -281,6 +283,8 @@ rust_prost_library(<a href="#rust_prost_library-name">name</a>, <a href="#rust_p
 <p><a id="rust_prost_toolchain"></a></p>
 <h2 id="rust_prost_toolchain"><a class="header" href="#rust_prost_toolchain">rust_prost_toolchain</a></h2>
 <pre>
+load("@rules_rust_prost//:defs.bzl", "rust_prost_toolchain")
+
 rust_prost_toolchain(<a href="#rust_prost_toolchain-name">name</a>, <a href="#rust_prost_toolchain-include_transitive_deps">include_transitive_deps</a>, <a href="#rust_prost_toolchain-prost_opts">prost_opts</a>, <a href="#rust_prost_toolchain-prost_plugin">prost_plugin</a>, <a href="#rust_prost_toolchain-prost_plugin_flag">prost_plugin_flag</a>,
                      <a href="#rust_prost_toolchain-prost_runtime">prost_runtime</a>, <a href="#rust_prost_toolchain-prost_types">prost_types</a>, <a href="#rust_prost_toolchain-proto_compiler">proto_compiler</a>, <a href="#rust_prost_toolchain-tonic_opts">tonic_opts</a>, <a href="#rust_prost_toolchain-tonic_plugin">tonic_plugin</a>,
                      <a href="#rust_prost_toolchain-tonic_plugin_flag">tonic_plugin_flag</a>, <a href="#rust_prost_toolchain-tonic_runtime">tonic_runtime</a>)
@@ -305,6 +309,8 @@ rust_prost_toolchain(<a href="#rust_prost_toolchain-name">name</a>, <a href="#ru
 <p><a id="rust_prost_transform"></a></p>
 <h2 id="rust_prost_transform"><a class="header" href="#rust_prost_transform">rust_prost_transform</a></h2>
 <pre>
+load("@rules_rust_prost//:defs.bzl", "rust_prost_transform")
+
 rust_prost_transform(<a href="#rust_prost_transform-name">name</a>, <a href="#rust_prost_transform-deps">deps</a>, <a href="#rust_prost_transform-srcs">srcs</a>, <a href="#rust_prost_transform-prost_opts">prost_opts</a>, <a href="#rust_prost_transform-tonic_opts">tonic_opts</a>)
 </pre>
 <p>A rule for transforming the outputs of <code>ProstGenProto</code> actions.</p>
@@ -350,7 +356,7 @@ actions with minimal impact to other consumers.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="rust_bindgen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rust_mdbook.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -364,7 +370,7 @@ actions with minimal impact to other consumers.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="rust_bindgen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rust_mdbook.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

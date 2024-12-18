@@ -155,13 +155,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-analyzer"><a class="header" href="#rust-analyzer">Rust Analyzer</a></h1>
-<ul>
-<li><a href="#rust_analyzer_aspect">rust_analyzer_aspect</a></li>
-<li><a href="#rust_analyzer_toolchain">rust_analyzer_toolchain</a></li>
-</ul>
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+                        <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>For <a href="https://rust-analyzer.github.io/manual.html#non-cargo-based-projects">non-Cargo projects</a>,
 <a href="https://rust-analyzer.github.io/">rust-analyzer</a> depends on a <code>rust-project.json</code> file at the
 root of the project that describes its structure. The <code>rust_analyzer</code> rule facilitates generating
@@ -227,23 +221,15 @@ to ensure a <code>rust-project.json</code> file is created and up to date when t
 <pre><code>build --@rules_rust//rust/settings:rustc_output_diagnostics=true --output_groups=+rust_lib_rustc_output,+rust_metadata_rustc_output
 </code></pre>
 <p>Then you can use a prototype <a href="https://marketplace.visualstudio.com/items?itemName=MattStark.bazel-rust-analyzer">rust-analyzer plugin</a> that automatically collects the outputs whenever you recompile.</p>
-<p><a id="rust_analyzer_toolchain"></a></p>
-<h2 id="rust_analyzer_toolchain"><a class="header" href="#rust_analyzer_toolchain">rust_analyzer_toolchain</a></h2>
-<pre>
-rust_analyzer_toolchain(<a href="#rust_analyzer_toolchain-name">name</a>, <a href="#rust_analyzer_toolchain-proc_macro_srv">proc_macro_srv</a>, <a href="#rust_analyzer_toolchain-rustc">rustc</a>, <a href="#rust_analyzer_toolchain-rustc_srcs">rustc_srcs</a>)
-</pre>
-<p>A toolchain for <a href="https://rust-analyzer.github.io/">rust-analyzer</a>.</p>
-<p><strong>ATTRIBUTES</strong></p>
-<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rust_analyzer_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_analyzer_toolchain-proc_macro_srv"></a>proc_macro_srv</td><td style="text-align: left">The path to a <code>rust_analyzer_proc_macro_srv</code> binary.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>None</code></td></tr>
-<tr><td style="text-align: left"><a id="rust_analyzer_toolchain-rustc"></a>rustc</td><td style="text-align: left">The path to a <code>rustc</code> binary.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rust_analyzer_toolchain-rustc_srcs"></a>rustc_srcs</td><td style="text-align: left">The source code of rustc.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-</tbody></table>
-</div>
+<h2 id="aspects"><a class="header" href="#aspects">Aspects</a></h2>
+<ul>
+<li><a href="#rust_analyzer_aspect">rust_analyzer_aspect</a></li>
+</ul>
 <p><a id="rust_analyzer_aspect"></a></p>
 <h2 id="rust_analyzer_aspect"><a class="header" href="#rust_analyzer_aspect">rust_analyzer_aspect</a></h2>
 <pre>
+load("@rules_rust//rust:defs.bzl", "rust_analyzer_aspect")
+
 rust_analyzer_aspect(<a href="#rust_analyzer_aspect-name">name</a>)
 </pre>
 <p>Annotates rust rules with RustAnalyzerInfo later used to build a rust-project.json</p>
@@ -269,7 +255,7 @@ rust_analyzer_aspect(<a href="#rust_analyzer_aspect-name">name</a>)
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="flatten.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="settings.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -283,7 +269,7 @@ rust_analyzer_aspect(<a href="#rust_analyzer_aspect-name">name</a>)
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="flatten.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="settings.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

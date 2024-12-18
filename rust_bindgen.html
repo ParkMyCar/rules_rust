@@ -186,6 +186,8 @@ toolchains following the instructions for <a href="#rust_bindgen_toolchain">rust
 <p><a id="rust_bindgen"></a></p>
 <h2 id="rust_bindgen"><a class="header" href="#rust_bindgen">rust_bindgen</a></h2>
 <pre>
+load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen")
+
 rust_bindgen(<a href="#rust_bindgen-name">name</a>, <a href="#rust_bindgen-bindgen_flags">bindgen_flags</a>, <a href="#rust_bindgen-cc_lib">cc_lib</a>, <a href="#rust_bindgen-clang_flags">clang_flags</a>, <a href="#rust_bindgen-header">header</a>, <a href="#rust_bindgen-merge_cc_lib_objects_into_rlib">merge_cc_lib_objects_into_rlib</a>,
              <a href="#rust_bindgen-wrap_static_fns">wrap_static_fns</a>)
 </pre>
@@ -204,6 +206,8 @@ rust_bindgen(<a href="#rust_bindgen-name">name</a>, <a href="#rust_bindgen-bindg
 <p><a id="rust_bindgen_toolchain"></a></p>
 <h2 id="rust_bindgen_toolchain"><a class="header" href="#rust_bindgen_toolchain">rust_bindgen_toolchain</a></h2>
 <pre>
+load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
+
 rust_bindgen_toolchain(<a href="#rust_bindgen_toolchain-name">name</a>, <a href="#rust_bindgen_toolchain-bindgen">bindgen</a>, <a href="#rust_bindgen_toolchain-clang">clang</a>, <a href="#rust_bindgen_toolchain-default_rustfmt">default_rustfmt</a>, <a href="#rust_bindgen_toolchain-libclang">libclang</a>, <a href="#rust_bindgen_toolchain-libstdcxx">libstdcxx</a>)
 </pre>
 <p>The tools required for the <code>rust_bindgen</code> rule.</p>
@@ -241,6 +245,8 @@ For additional information, see the <a href="https://docs.bazel.build/versions/m
 <p><a id="rust_bindgen_library"></a></p>
 <h2 id="rust_bindgen_library"><a class="header" href="#rust_bindgen_library">rust_bindgen_library</a></h2>
 <pre>
+load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_library")
+
 rust_bindgen_library(<a href="#rust_bindgen_library-name">name</a>, <a href="#rust_bindgen_library-header">header</a>, <a href="#rust_bindgen_library-cc_lib">cc_lib</a>, <a href="#rust_bindgen_library-bindgen_flags">bindgen_flags</a>, <a href="#rust_bindgen_library-bindgen_features">bindgen_features</a>, <a href="#rust_bindgen_library-clang_flags">clang_flags</a>,
                      <a href="#rust_bindgen_library-wrap_static_fns">wrap_static_fns</a>, <a href="#rust_bindgen_library-kwargs">kwargs</a>)
 </pre>
@@ -266,7 +272,7 @@ rust_bindgen_library(<a href="#rust_bindgen_library-name">name</a>, <a href="#ru
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="rust_prost.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rust_mdbook.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -280,7 +286,7 @@ rust_bindgen_library(<a href="#rust_bindgen_library-name">name</a>, <a href="#ru
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="rust_prost.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rust_mdbook.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

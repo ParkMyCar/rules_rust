@@ -157,15 +157,25 @@
                     <main>
                         <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 <h1 id="cargo"><a class="header" href="#cargo">Cargo</a></h1>
+<p>Common definitions for the <code>@rules_rust//cargo</code> package</p>
+<h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
+<ul>
+<li><a href="#cargo_dep_env">cargo_dep_env</a></li>
+</ul>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<ul>
+<li><a href="#cargo_build_script">cargo_build_script</a></li>
+<li><a href="#cargo_env">cargo_env</a></li>
+</ul>
+<h2 id="repository-rules"><a class="header" href="#repository-rules">Repository Rules</a></h2>
 <ul>
 <li><a href="#cargo_bootstrap_repository">cargo_bootstrap_repository</a></li>
-<li><a href="#cargo_build_script">cargo_build_script</a></li>
-<li><a href="#cargo_dep_env">cargo_dep_env</a></li>
-<li><a href="#cargo_env">cargo_env</a></li>
 </ul>
 <p><a id="cargo_dep_env"></a></p>
 <h2 id="cargo_dep_env"><a class="header" href="#cargo_dep_env">cargo_dep_env</a></h2>
 <pre>
+load("@rules_rust//cargo:defs.bzl", "cargo_dep_env")
+
 cargo_dep_env(<a href="#cargo_dep_env-name">name</a>, <a href="#cargo_dep_env-src">src</a>, <a href="#cargo_dep_env-out_dir">out_dir</a>)
 </pre>
 <p>A rule for generating variables for dependent <code>cargo_build_script</code>s without a build script. This is useful for using Bazel rules instead of a build script, while also generating configuration information for build scripts which depend on this crate.</p>
@@ -179,6 +189,8 @@ cargo_dep_env(<a href="#cargo_dep_env-name">name</a>, <a href="#cargo_dep_env-sr
 <p><a id="cargo_build_script"></a></p>
 <h2 id="cargo_build_script"><a class="header" href="#cargo_build_script">cargo_build_script</a></h2>
 <pre>
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+
 cargo_build_script(<a href="#cargo_build_script-name">name</a>, <a href="#cargo_build_script-edition">edition</a>, <a href="#cargo_build_script-crate_name">crate_name</a>, <a href="#cargo_build_script-crate_root">crate_root</a>, <a href="#cargo_build_script-srcs">srcs</a>, <a href="#cargo_build_script-crate_features">crate_features</a>, <a href="#cargo_build_script-version">version</a>, <a href="#cargo_build_script-deps">deps</a>,
                    <a href="#cargo_build_script-link_deps">link_deps</a>, <a href="#cargo_build_script-proc_macro_deps">proc_macro_deps</a>, <a href="#cargo_build_script-build_script_env">build_script_env</a>, <a href="#cargo_build_script-use_default_shell_env">use_default_shell_env</a>, <a href="#cargo_build_script-data">data</a>,
                    <a href="#cargo_build_script-compile_data">compile_data</a>, <a href="#cargo_build_script-tools">tools</a>, <a href="#cargo_build_script-links">links</a>, <a href="#cargo_build_script-rundir">rundir</a>, <a href="#cargo_build_script-rustc_env">rustc_env</a>, <a href="#cargo_build_script-rustc_env_files">rustc_env_files</a>, <a href="#cargo_build_script-rustc_flags">rustc_flags</a>,
@@ -263,6 +275,8 @@ rust_library(
 <p><a id="cargo_env"></a></p>
 <h2 id="cargo_env"><a class="header" href="#cargo_env">cargo_env</a></h2>
 <pre>
+load("@rules_rust//cargo:defs.bzl", "cargo_env")
+
 cargo_env(<a href="#cargo_env-env">env</a>)
 </pre>
 <p>A helper for generating platform specific environment variables</p>
@@ -298,6 +312,8 @@ cargo_bootstrap_repository(
 <p><a id="cargo_bootstrap_repository"></a></p>
 <h2 id="cargo_bootstrap_repository"><a class="header" href="#cargo_bootstrap_repository">cargo_bootstrap_repository</a></h2>
 <pre>
+load("@rules_rust//cargo:defs.bzl", "cargo_bootstrap_repository")
+
 cargo_bootstrap_repository(<a href="#cargo_bootstrap_repository-name">name</a>, <a href="#cargo_bootstrap_repository-srcs">srcs</a>, <a href="#cargo_bootstrap_repository-binary">binary</a>, <a href="#cargo_bootstrap_repository-build_mode">build_mode</a>, <a href="#cargo_bootstrap_repository-cargo_config">cargo_config</a>, <a href="#cargo_bootstrap_repository-cargo_lockfile">cargo_lockfile</a>, <a href="#cargo_bootstrap_repository-cargo_toml">cargo_toml</a>,
                            <a href="#cargo_bootstrap_repository-compressed_windows_toolchain_names">compressed_windows_toolchain_names</a>, <a href="#cargo_bootstrap_repository-env">env</a>, <a href="#cargo_bootstrap_repository-env_label">env_label</a>, <a href="#cargo_bootstrap_repository-repo_mapping">repo_mapping</a>,
                            <a href="#cargo_bootstrap_repository-rust_toolchain_cargo_template">rust_toolchain_cargo_template</a>, <a href="#cargo_bootstrap_repository-rust_toolchain_rustc_template">rust_toolchain_rustc_template</a>, <a href="#cargo_bootstrap_repository-timeout">timeout</a>,
@@ -327,7 +343,7 @@ cargo_bootstrap_repository(<a href="#cargo_bootstrap_repository-name">name</a>, 
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="rust_fmt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rust_doc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -341,7 +357,7 @@ cargo_bootstrap_repository(<a href="#cargo_bootstrap_repository-name">name</a>, 
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="rust_fmt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rust_doc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

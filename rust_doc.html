@@ -156,7 +156,8 @@
                 <div id="content" class="content">
                     <main>
                         <!-- Generated with Stardoc: http://skydoc.bazel.build -->
-<h1 id="rust-doc"><a class="header" href="#rust-doc">Rust Doc</a></h1>
+<p>Public entry point to all Rust rules and supported APIs.</p>
+<h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
 <ul>
 <li><a href="#rust_doc">rust_doc</a></li>
 <li><a href="#rust_doc_test">rust_doc_test</a></li>
@@ -164,6 +165,8 @@
 <p><a id="rust_doc"></a></p>
 <h2 id="rust_doc"><a class="header" href="#rust_doc">rust_doc</a></h2>
 <pre>
+load("@rules_rust//rust:defs.bzl", "rust_doc")
+
 rust_doc(<a href="#rust_doc-name">name</a>, <a href="#rust_doc-crate">crate</a>, <a href="#rust_doc-html_after_content">html_after_content</a>, <a href="#rust_doc-html_before_content">html_before_content</a>, <a href="#rust_doc-html_in_header">html_in_header</a>, <a href="#rust_doc-markdown_css">markdown_css</a>,
          <a href="#rust_doc-rustc_flags">rustc_flags</a>, <a href="#rust_doc-rustdoc_flags">rustdoc_flags</a>)
 </pre>
@@ -208,6 +211,8 @@ rust_doc(
 <p><a id="rust_doc_test"></a></p>
 <h2 id="rust_doc_test"><a class="header" href="#rust_doc_test">rust_doc_test</a></h2>
 <pre>
+load("@rules_rust//rust:defs.bzl", "rust_doc_test")
+
 rust_doc_test(<a href="#rust_doc_test-name">name</a>, <a href="#rust_doc_test-deps">deps</a>, <a href="#rust_doc_test-crate">crate</a>, <a href="#rust_doc_test-proc_macro_deps">proc_macro_deps</a>)
 </pre>
 <p>Runs Rust documentation tests.</p>
@@ -248,11 +253,11 @@ rust_doc_test(
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="rust.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rust_fmt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="rust_clippy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="cargo.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -262,11 +267,11 @@ rust_doc_test(
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="rust.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rust_fmt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="rust_clippy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="cargo.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

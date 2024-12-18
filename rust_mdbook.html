@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>rustfmt - rules_rust</title>
+        <title>mdbook - rules_rust</title>
 
 
         <!-- Custom HTML head -->
@@ -155,88 +155,88 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p><a href="https://github.com/rust-lang/rustfmt#readme">Rustfmt</a> is a tool for formatting Rust code according to style guidelines.
-By default, Rustfmt uses a style which conforms to the <a href="https://github.com/rust-lang-nursery/fmt-rfcs/blob/master/guide/guide.md">Rust style guide</a> that
-has been formalized through the <a href="https://github.com/rust-lang-nursery/fmt-rfcs">style RFC process</a>. A complete list of all
-configuration options can be found in the <a href="https://rust-lang.github.io/rustfmt/">Rustfmt GitHub Pages</a>.</p>
-<h3 id="setup"><a class="header" href="#setup">Setup</a></h3>
-<p>Formatting your Rust targets' source code requires no setup outside of loading <code>rules_rust</code>
-in your workspace. Simply run <code>bazel run @rules_rust//:rustfmt</code> to format source code.</p>
-<p>In addition to this formatter, a simple check can be performed using the <a href="#rustfmt-aspect">rustfmt_aspect</a> aspect by running</p>
-<pre><code class="language-text">bazel build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect --output_groups=rustfmt_checks
-</code></pre>
-<p>Add the following to a <code>.bazelrc</code> file to enable this check during the build phase.</p>
-<pre><code class="language-text">build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
-build --output_groups=+rustfmt_checks
-</code></pre>
-<p>It's recommended to only enable this aspect in your CI environment so formatting issues do not
-impact user's ability to rapidly iterate on changes.</p>
-<p>The <code>rustfmt_aspect</code> also uses a <code>--@rules_rust//rust/settings:rustfmt.toml</code> setting which determines the
-<a href="https://rust-lang.github.io/rustfmt/">configuration file</a> used by the formatter (<code>@rules_rust//tools/rustfmt</code>) and the aspect
-(<code>rustfmt_aspect</code>). This flag can be added to your <code>.bazelrc</code> file to ensure a consistent config
-file is used whenever <code>rustfmt</code> is run:</p>
-<pre><code class="language-text">build --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
-</code></pre>
-<h3 id="tips"><a class="header" href="#tips">Tips</a></h3>
-<p>Any target which uses Bazel generated sources will cause the <code>@rules_rust//tools/rustfmt</code> tool to fail with
-<code>failed to resolve mod `MOD` </code>. To avoid failures, <a href="https://rust-lang.github.io/rustfmt/?version=v1.6.0&amp;search=skip_chil#skip_children"><code>skip_children = true</code></a>
-is recommended to be set in the workspace's <code>rustfmt.toml</code> file which allows rustfmt to run on these targets
-without failing.</p>
+                        <!-- Generated with Stardoc: http://skydoc.bazel.build -->
+<h1 id="rules_rust_mdbook"><a class="header" href="#rules_rust_mdbook">rules_rust_mdbook</a></h1>
+<p>Bazel rules for <a href="https://github.com/rust-lang/mdBook">mdBook</a>.</p>
 <h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
 <ul>
-<li><a href="#rustfmt_test">rustfmt_test</a></li>
+<li><a href="#mdbook">mdbook</a></li>
+<li><a href="#mdbook_server">mdbook_server</a></li>
+<li><a href="#mdbook_toolchain">mdbook_toolchain</a></li>
 </ul>
-<h2 id="aspects"><a class="header" href="#aspects">Aspects</a></h2>
-<ul>
-<li><a href="#rustfmt_aspect">rustfmt_aspect</a></li>
-</ul>
-<p><a id="rustfmt_test"></a></p>
-<h2 id="rustfmt_test"><a class="header" href="#rustfmt_test">rustfmt_test</a></h2>
-<pre>
-load("@rules_rust//rust:defs.bzl", "rustfmt_test")
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<h3 id="bzlmod"><a class="header" href="#bzlmod">bzlmod</a></h3>
+<pre><code class="language-python">bazel_dep(name = "rules_rust_mdbook", version = "{SEE_RELEASE_NOTES}")
+</code></pre>
+<h3 id="workspace"><a class="header" href="#workspace">WORKSPACE</a></h3>
+<pre><code class="language-python">load("@rules_rust_mdbook//:repositories.bzl", "mdbook_register_toolchains", "rules_mdbook_dependencies")
 
-rustfmt_test(<a href="#rustfmt_test-name">name</a>, <a href="#rustfmt_test-targets">targets</a>)
+rules_mdbook_dependencies()
+
+mdbook_register_toolchains()
+
+load("@rules_rust_mdbook//:repositories_transitive.bzl", "rules_mdbook_transitive_deps")
+
+rules_mdbook_transitive_deps()
+</code></pre>
+<hr />
+<hr />
+<p><a id="mdbook"></a></p>
+<h2 id="mdbook"><a class="header" href="#mdbook">mdbook</a></h2>
+<pre>
+load("@rules_rust_mdbook//:defs.bzl", "mdbook")
+
+mdbook(<a href="#mdbook-name">name</a>, <a href="#mdbook-srcs">srcs</a>, <a href="#mdbook-book">book</a>, <a href="#mdbook-plugins">plugins</a>)
 </pre>
-<p>A test rule for performing <code>rustfmt --check</code> on a set of targets</p>
+<p>Rules to create book from markdown files using <code>mdBook</code>.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rustfmt_test-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
-<tr><td style="text-align: left"><a id="rustfmt_test-targets"></a>targets</td><td style="text-align: left">Rust targets to run <code>rustfmt --check</code> on.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="mdbook-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook-srcs"></a>srcs</td><td style="text-align: left">All inputs to the book.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
+<tr><td style="text-align: left"><a id="mdbook-book"></a>book</td><td style="text-align: left">The <code>book.toml</code> file.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook-plugins"></a>plugins</td><td style="text-align: left">Executables to inject into <code>PATH</code> for use in <a href="https://rust-lang.github.io/mdBook/format/configuration/preprocessors.html#provide-your-own-command">preprocessor commands</a>.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 </tbody></table>
 </div>
-<p><a id="rustfmt_aspect"></a></p>
-<h2 id="rustfmt_aspect"><a class="header" href="#rustfmt_aspect">rustfmt_aspect</a></h2>
+<p><a id="mdbook_server"></a></p>
+<h2 id="mdbook_server"><a class="header" href="#mdbook_server">mdbook_server</a></h2>
 <pre>
-load("@rules_rust//rust:defs.bzl", "rustfmt_aspect")
+load("@rules_rust_mdbook//:defs.bzl", "mdbook_server")
 
-rustfmt_aspect(<a href="#rustfmt_aspect-name">name</a>)
+mdbook_server(<a href="#mdbook_server-name">name</a>, <a href="#mdbook_server-book">book</a>, <a href="#mdbook_server-hostname">hostname</a>, <a href="#mdbook_server-port">port</a>)
 </pre>
-<p>This aspect is used to gather information about a crate for use in rustfmt and perform rustfmt checks</p>
-<p>Output Groups:</p>
-<ul>
-<li><code>rustfmt_checks</code>: Executes <code>rustfmt --check</code> on the specified target.</li>
-</ul>
-<p>The build setting <code>@rules_rust//rust/settings:rustfmt.toml</code> is used to control the Rustfmt <a href="https://rust-lang.github.io/rustfmt/">configuration settings</a>
-used at runtime.</p>
-<p>This aspect is executed on any target which provides the <code>CrateInfo</code> provider. However
-users may tag a target with <code>no-rustfmt</code> or <code>no-format</code> to have it skipped. Additionally,
-generated source files are also ignored by this aspect.</p>
-<p><strong>ASPECT ATTRIBUTES</strong></p>
+<p>Spawn an mdbook server for a given <code>mdbook</code> target.</p>
 <p><strong>ATTRIBUTES</strong></p>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
-<tr><td style="text-align: left"><a id="rustfmt_aspect-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_server-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_server-book"></a>book</td><td style="text-align: left">The <code>mdbook</code> target to serve.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_server-hostname"></a>hostname</td><td style="text-align: left">The default hostname to use (Can be overridden on the command line).</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"localhost"</code></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_server-port"></a>port</td><td style="text-align: left">The default port to use (Can be overridden on the command line).</td><td style="text-align: left">String</td><td style="text-align: left">optional</td><td style="text-align: left"><code>"3000"</code></td></tr>
+</tbody></table>
+</div>
+<p><a id="mdbook_toolchain"></a></p>
+<h2 id="mdbook_toolchain"><a class="header" href="#mdbook_toolchain">mdbook_toolchain</a></h2>
+<pre>
+load("@rules_rust_mdbook//:defs.bzl", "mdbook_toolchain")
+
+mdbook_toolchain(<a href="#mdbook_toolchain-name">name</a>, <a href="#mdbook_toolchain-mdbook">mdbook</a>, <a href="#mdbook_toolchain-plugins">plugins</a>)
+</pre>
+<p>A <a href="https://rust-lang.github.io/mdBook/">mdBook</a> toolchain.</p>
+<p><strong>ATTRIBUTES</strong></p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Name</th><th style="text-align: left">Description</th><th style="text-align: left">Type</th><th style="text-align: left">Mandatory</th><th style="text-align: left">Default</th></tr></thead><tbody>
+<tr><td style="text-align: left"><a id="mdbook_toolchain-name"></a>name</td><td style="text-align: left">A unique name for this target.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels#target-names">Name</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_toolchain-mdbook"></a>mdbook</td><td style="text-align: left">A <code>mdBook</code> binary.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">Label</a></td><td style="text-align: left">required</td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left"><a id="mdbook_toolchain-plugins"></a>plugins</td><td style="text-align: left">Executables to inject into <code>PATH</code> for use in <a href="https://rust-lang.github.io/mdBook/format/configuration/preprocessors.html#provide-your-own-command">preprocessor commands</a>.</td><td style="text-align: left"><a href="https://bazel.build/concepts/labels">List of labels</a></td><td style="text-align: left">optional</td><td style="text-align: left"><code>[]</code></td></tr>
 </tbody></table>
 </div>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="rust_clippy.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="rust_bindgen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="rust_doc.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rust_prost.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -246,11 +246,11 @@ generated source files are also ignored by this aspect.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="rust_clippy.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="rust_bindgen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="rust_doc.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rust_prost.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
